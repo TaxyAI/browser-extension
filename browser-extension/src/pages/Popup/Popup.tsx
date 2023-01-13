@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import logo from '../../assets/img/logo.svg';
 // import Greetings from '../../containers/Greetings/Greetings';
 import './Popup.css';
 
 const Popup = () => {
+  useEffect(() => {
+    performSearch();
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -25,3 +29,9 @@ const Popup = () => {
 };
 
 export default Popup;
+
+const performSearch = async () => {
+  console.log('performSearch');
+};
+
+// Run performSearch as soon as the component is mounted
