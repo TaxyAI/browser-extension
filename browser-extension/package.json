@@ -1,11 +1,11 @@
 {
-  "name": "chrome-extension-boilerplate-react",
-  "version": "4.4.1",
-  "description": "A chrome extension boilerplate built with React 17, Webpack 5, and Webpack Dev Server 4",
+  "name": "leo-bot",
+  "version": "0.0.1",
+  "description": "Answer questions based on the content of the current page",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lxieyang/chrome-extension-boilerplate-react.git"
+    "url": "https://github.com/corbt/leo-bot.git"
   },
   "scripts": {
     "build": "node utils/build.js",
