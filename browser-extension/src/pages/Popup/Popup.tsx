@@ -1,37 +1,21 @@
 import React, { useEffect } from 'react';
+import useAsyncEffect from 'use-async-effect';
 import logo from '../../assets/img/logo.svg';
 // import Greetings from '../../containers/Greetings/Greetings';
-import './Popup.css';
+import performSearch from './search';
 
 const Popup = () => {
-  useEffect(() => {
-    performSearch();
+  const [searchResults, setSearchResults] = React.useState('searching');
+
+  useAsyncEffect(async () => {
+    setSearchResults(await performSearch('What color is the sky?'));
   }, []);
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/pages/Popup/Popup.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React!
-        </a>
-      </header>
+      <div>{searchResults}</div>
     </div>
   );
 };
 
 export default Popup;
-
-const performSearch = async () => {
-  console.log('performSearch');
-};
-
-// Run performSearch as soon as the component is mounted
