@@ -1,6 +1,6 @@
 import React from 'react';
 import logo from '../../assets/img/logo.svg';
-import Greetings from '../../containers/Greetings/Greetings';
+// import Greetings from '../../containers/Greetings/Greetings';
 import './Popup.css';
 
 const Popup = () => {
@@ -9,7 +9,7 @@ const Popup = () => {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
-          Edit <code>src/pages/Popup/Popup.jsx</code> and save to reload.
+          Edit <code>src/pages/Popup/Popup.tsx</code> and save to reload.
         </p>
         <a
           className="App-link"

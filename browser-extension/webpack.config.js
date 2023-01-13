@@ -88,9 +88,9 @@ var options = {
         loader: 'html-loader',
         exclude: /node_modules/,
       },
-      { test: /\.(ts|tsx)$/, loader: 'ts-loader', exclude: /node_modules/ },
+      // { test: /\.(ts|tsx)$/, loader: 'babel-loader', exclude: /node_modules/ },
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(js|jsx|ts|tsx)$/,
         use: [
           {
             loader: 'source-map-loader',
