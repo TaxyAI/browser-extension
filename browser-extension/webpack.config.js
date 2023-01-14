@@ -4,7 +4,8 @@ var webpack = require('webpack'),
   env = require('./utils/env'),
   CopyWebpackPlugin = require('copy-webpack-plugin'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
-  TerserPlugin = require('terser-webpack-plugin');
+  TerserPlugin = require('terser-webpack-plugin'),
+  Dotenv = require('dotenv-webpack');
 var { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
@@ -188,6 +189,7 @@ var options = {
       chunks: ['panel'],
       cache: false,
     }),
+    new Dotenv({ path: path.resolve(__dirname, '.env') }),
   ],
   infrastructureLogging: {
     level: 'info',

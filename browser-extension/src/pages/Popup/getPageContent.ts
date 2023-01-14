@@ -1,5 +1,12 @@
-// import extractor from '../../vendor/unfluff/src/unfluff';
 import { Readability } from '@mozilla/readability';
+import TurndownService from 'turndown';
+
+const turnDown = new TurndownService();
+
+// ContentType is the return type of getPageContent
+export type ContentType = NonNullable<
+  Awaited<ReturnType<typeof getPageContent>>
+>;
 
 export default async function getPageContent() {
   const html = await getHTML();
@@ -8,7 +15,15 @@ export default async function getPageContent() {
   const doc = parser.parseFromString(html, 'text/html');
 
   const reader = new Readability(doc);
-  return reader.parse();
+  const parsed = reader.parse();
+
+  console.log('parsed', parsed);
+  if (parsed != null) {
+    return {
+      ...parsed,
+      markdown: turnDown.turndown(parsed.content),
+    };
+  }
 }
 
 async function getHTML() {
@@ -26,7 +41,6 @@ async function getHTML() {
   const response = await chrome.tabs.sendMessage(activeTab.id, {
     type: 'get-page-contents',
   });
-  console.log('got resp', response);
 
   return response.html;
 }
