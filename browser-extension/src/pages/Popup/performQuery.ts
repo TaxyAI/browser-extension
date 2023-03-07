@@ -1,14 +1,13 @@
 import { Configuration, OpenAIApi } from 'openai';
 import { ContentType } from './getPageContent';
 
-// TODO: ask the user to give us their key
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_DEV_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
 export async function performQuery(query: string, pageContent: ContentType) {
   const prompt = formatPrompt(query, pageContent);
+  const openai = new OpenAIApi(
+    new Configuration({
+      apiKey: (await chrome.storage.sync.get('openai-key'))['openai-key'],
+    })
+  );
 
   // return `Answer to "${query}": ${pageContent.title}`;
 
