@@ -13,24 +13,43 @@ import {
   AccordionButton,
   Alert,
   AlertIcon,
+  useToast,
+  HStack,
 } from '@chakra-ui/react';
-import { ChatIcon } from '@chakra-ui/icons';
+import { ChatIcon, CopyIcon } from '@chakra-ui/icons';
 import { useAsync } from 'react-use';
 import getPageContent from './getPageContent';
 import Markdown from 'marked-react';
 import { formatPrompt, performQuery } from './performQuery';
 
 const QA = () => {
-  const [queryResults, setQueryResults] = React.useState<string | null>(null);
+  const [queryResults, setQueryResults] = React.useState<{
+    content: string;
+    type: 'error' | 'success';
+  } | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
   const [loading, setLoading] = React.useState(false);
+
+  const toast = useToast();
 
   const onSearch = async () => {
     if (!pageContent.value || !searchQuery) return;
     setLoading(true);
-    setQueryResults(await performQuery(searchQuery, pageContent.value));
+    try {
+      const results = await performQuery(searchQuery, pageContent.value);
+      if (results) {
+        setQueryResults({ content: results, type: 'success' });
+      } else {
+        setQueryResults({
+          content: 'No results found. Please try a different question.',
+          type: 'error',
+        });
+      }
+    } catch (error: any) {
+      setQueryResults({ content: error.message, type: 'error' });
+    }
+
     setLoading(false);
   };
 
@@ -58,15 +77,13 @@ const QA = () => {
   const formattedQueryResults = useMemo(() => {
     if (!queryResults) return null;
 
-    const alertStatus = queryResults.includes('Not enough information')
-      ? 'error'
-      : 'success';
+    const alertStatus = queryResults.type;
 
     return (
       <Alert status={alertStatus} mb={4}>
         <AlertIcon />
         <Box mb={-4}>
-          {queryResults?.split('\n').map((line, i) => (
+          {queryResults?.content.split('\n').map((line, i) => (
             <Text key={i} mb="4">
               {line}
             </Text>
@@ -103,16 +120,38 @@ const QA = () => {
         <AccordionItem>
           <Heading as="h2" size="md">
             <AccordionButton>
-              <Box as="span" flex="1" textAlign="left">
-                Detected Page Content
-              </Box>
+              <HStack flex="1">
+                <Box as="span" textAlign="left" mr="4">
+                  Detected Page Content
+                </Box>
+                <Button>
+                  <CopyIcon
+                    onClick={(event) => {
+                      event.preventDefault();
+                      if (pageContent.value?.markdown) {
+                        navigator.clipboard.writeText(
+                          pageContent.value.markdown
+                        );
+                        toast({
+                          title: 'Copied to clipboard',
+                          status: 'success',
+                          duration: 3000,
+                          isClosable: true,
+                        });
+                      }
+                    }}
+                  />
+                </Button>
+              </HStack>
               <AccordionIcon />
             </AccordionButton>
           </Heading>
           <AccordionPanel pb={4}>
-            <Heading as="h3" size="sm" mb={4}>
-              {pageContent.value?.title}
-            </Heading>
+            <HStack>
+              <Heading as="h3" size="sm" mb={4}>
+                {pageContent.value?.title}
+              </Heading>
+            </HStack>
             {pageContent.value?.markdown && (
               <Box css={{ p: { marginBottom: '1em' } }}>
                 <Markdown>{pageContent.value?.markdown}</Markdown>
