@@ -124,23 +124,21 @@ const QA = () => {
                 <Box as="span" textAlign="left" mr="4">
                   Detected Page Content
                 </Box>
-                <Button>
-                  <CopyIcon
-                    onClick={(event) => {
-                      event.preventDefault();
-                      if (pageContent.value?.markdown) {
-                        navigator.clipboard.writeText(
-                          pageContent.value.markdown
-                        );
-                        toast({
-                          title: 'Copied to clipboard',
-                          status: 'success',
-                          duration: 3000,
-                          isClosable: true,
-                        });
-                      }
-                    }}
-                  />
+                <Button
+                  onClick={(event) => {
+                    event.preventDefault();
+                    if (pageContent.value?.markdown) {
+                      navigator.clipboard.writeText(pageContent.value.markdown);
+                      toast({
+                        title: 'Copied to clipboard',
+                        status: 'success',
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                    }
+                  }}
+                >
+                  <CopyIcon />
                 </Button>
               </HStack>
               <AccordionIcon />
