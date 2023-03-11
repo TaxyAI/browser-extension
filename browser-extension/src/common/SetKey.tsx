@@ -21,8 +21,8 @@ import { ChatIcon, CheckIcon } from '@chakra-ui/icons';
 import { useAsync } from 'react-use';
 import getPageContent from './getPageContent';
 import Markdown from 'marked-react';
-import { formatPrompt, performQuery } from './performQuery';
-import { useSyncStorage } from '../../state';
+import { formatPrompt, performQuery } from '../pages/Popup/performQuery';
+import { useSyncStorage } from '../state';
 
 const SetKey = () => {
   const [openAIKey, setOpenAIKey] = useSyncStorage('openai-key');

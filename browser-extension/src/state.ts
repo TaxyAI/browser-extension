@@ -35,5 +35,5 @@ export function useSyncStorage<T extends keyof StoredTypes>(key: T) {
     });
   }, [key]);
 
-  return [state, setItem];
+  return [state, setItem] as const;
 }

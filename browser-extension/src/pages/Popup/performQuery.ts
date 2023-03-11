@@ -1,5 +1,5 @@
 import { Configuration, OpenAIApi } from 'openai';
-import { ContentType } from './getPageContent';
+import { ContentType } from '../../common/getPageContent';
 
 export async function performQuery(query: string, pageContent: ContentType) {
   const prompt = formatPrompt(query, pageContent);

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Box,
   Text,
@@ -20,101 +20,112 @@ import { ChatIcon, CopyIcon } from '@chakra-ui/icons';
 import { useAsync } from 'react-use';
 import getPageContent from '../../common/getPageContent';
 import Markdown from 'marked-react';
-import { formatPrompt, performQuery } from './performQuery';
+import { performQuery, RecordedMessage } from './performQuery';
 
 const QA = () => {
-  const [queryResults, setQueryResults] = React.useState<{
-    content: string;
-    type: 'error' | 'success';
-  } | null>(null);
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [messageContent, setMessageContent] = React.useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [loading, setLoading] = React.useState(false);
 
+  const [messages, setMessages] = React.useState<RecordedMessage[]>([]);
+
   const toast = useToast();
-
-  const onSearch = async () => {
-    if (!pageContent.value || !searchQuery) return;
-    setLoading(true);
-    try {
-      const results = await performQuery(searchQuery, pageContent.value);
-      if (results) {
-        setQueryResults({ content: results, type: 'success' });
-      } else {
-        setQueryResults({
-          content: 'No results found. Please try a different question.',
-          type: 'error',
-        });
-      }
-    } catch (error: any) {
-      setQueryResults({ content: error.message, type: 'error' });
-    }
-
-    setLoading(false);
-  };
-
-  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      onSearch();
-    }
-  };
 
   const pageContent = useAsync(
     () => getPageContent().catch((e) => console.log(e)),
     []
   );
 
-  const formattedPrompt = useMemo(() => {
-    if (!pageContent.value) return '';
-    return formatPrompt(searchQuery, pageContent.value);
-  }, [pageContent.value, searchQuery]);
+  const sendMessages = useCallback(
+    async (messages: RecordedMessage[]) => {
+      if (!pageContent.value || !messages) return;
+      setLoading(true);
+      let returnMessage: RecordedMessage = {
+        role: 'assistant',
+        content: 'Loading...',
+        type: 'success',
+      };
+      try {
+        const results = await performQuery(messages, pageContent.value);
+        if (results) {
+          returnMessage.content = results;
+        } else {
+          returnMessage.content =
+            'No results found. Please try a different question.';
+          returnMessage.type = 'error';
+        }
+      } catch (error: any) {
+        returnMessage.content = error.message;
+        returnMessage.type = 'error';
+      }
+      setMessages([...messages, returnMessage]);
 
-  useEffect(() => {
-    setQueryResults(null);
-  }, [searchQuery]);
+      setLoading(false);
+    },
+    [pageContent.value]
+  );
 
-  const formattedQueryResults = useMemo(() => {
-    if (!queryResults) return null;
+  const onSubmitUserMessage = useCallback(
+    (content: string) => {
+      const updatedMessages: RecordedMessage[] = [
+        ...messages,
+        { role: 'user', content, type: 'info' },
+      ];
+      setMessageContent('');
+      setMessages(updatedMessages);
+      sendMessages(updatedMessages);
+    },
+    [messages, sendMessages]
+  );
 
-    const alertStatus = queryResults.type;
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onSubmitUserMessage(messageContent);
+    }
+  };
 
-    return (
-      <Alert status={alertStatus} mb={4}>
-        <AlertIcon />
-        <Box mb={-4}>
-          {queryResults?.content.split('\n').map((line, i) => (
-            <Text key={i} mb="4">
-              {line}
-            </Text>
-          ))}
+  const formattedMessages = useMemo(() => {
+    return messages.map((message, i) => {
+      return (
+        <Box>
+          <Alert status={message.type} mb={4}>
+            <AlertIcon />
+            <Box mb={-4}>
+              {message.content.split('\n').map((line, i) => (
+                <Text key={i} mb="4">
+                  {line}
+                </Text>
+              ))}
+            </Box>
+          </Alert>
         </Box>
-      </Alert>
-    );
-  }, [queryResults]);
+      );
+    });
+  }, [messages]);
 
   return (
     <>
+      {formattedMessages}
       <Textarea
         autoFocus
         noOfLines={2}
         placeholder="Your question"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        value={messageContent}
+        onChange={(e) => setMessageContent(e.target.value)}
         mb={2}
         ref={textareaRef}
         onKeyDown={onKeyDown}
       />
       <Button
         leftIcon={loading ? <Spinner /> : <ChatIcon />}
-        onClick={onSearch}
+        onClick={() => onSubmitUserMessage(messageContent)}
         colorScheme="blue"
-        disabled={loading || !searchQuery || !pageContent.value}
+        disabled={loading || !messageContent || !pageContent.value}
         mb={4}
       >
         Ask Leo
       </Button>
-      {formattedQueryResults}
       <Accordion allowToggle>
         {/* Page content */}
         <AccordionItem>
@@ -156,25 +167,6 @@ const QA = () => {
               </Box>
             )}
             {pageContent.value?.markdown}
-          </AccordionPanel>
-        </AccordionItem>
-
-        {/* Prompt */}
-        <AccordionItem>
-          <Heading as="h2" size="md">
-            <AccordionButton>
-              <Box as="span" flex="1" textAlign="left">
-                Derived Prompt
-              </Box>
-              <AccordionIcon />
-            </AccordionButton>
-          </Heading>
-          <AccordionPanel pb={4}>
-            {formattedPrompt.split('\n').map((line, i) => (
-              <Text key={i} mb="4">
-                {line}
-              </Text>
-            ))}
           </AccordionPanel>
         </AccordionItem>
       </Accordion>

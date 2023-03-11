@@ -2,7 +2,7 @@ import { Box, ChakraProvider, Heading, Text } from '@chakra-ui/react';
 import React from 'react';
 import QA from './QA';
 import { useSyncStorage } from '../../state';
-import SetKey from './SetKey';
+import SetKey from '../../common/SetKey';
 
 const Popup = () => {
   const [openAIKey] = useSyncStorage('openai-key');
