@@ -1,6 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Leo AI Assistant",
+  "version": "1.0.0",
   "description": "Answer questions based on the content of the current page",
   "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },
