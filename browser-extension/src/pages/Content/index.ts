@@ -1,5 +1,7 @@
 // console.log('Content script loaded..');
 
+import { watchForSimplifyDomRequest } from '../../helpers/simplifyDom';
+
 // Listen for the popup to send the `get-page-contents` message, and respond
 // with the full HTML of the current page
 
@@ -10,3 +12,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
   }
 });
+
+watchForSimplifyDomRequest();

@@ -22,6 +22,7 @@ import prettier from 'prettier/standalone';
 import parserHTML from 'prettier/parser-html';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { encoding_for_model } from '@dqbd/tiktoken';
+import { requestSimplifiedDom } from '../../helpers/simplifyDom';
 
 const enc = encoding_for_model('gpt-3.5-turbo');
 
@@ -53,7 +54,7 @@ const TextToJS = () => {
 
   useEffect(() => {
     const loadPageHTML = async () => {
-      const pageHTML = await getPageHTML();
+      const pageHTML = await requestSimplifiedDom();
       setPageHTML(pageHTML);
     };
     loadPageHTML();
@@ -64,7 +65,7 @@ const TextToJS = () => {
       setLoading(true);
 
       try {
-        const relevantHTML = await getRelevantHTML(instructions, fullPageHTML);
+        const relevantHTML = await requestSimplifiedDom();
         setRelevantHTML(relevantHTML);
       } catch (e) {
         console.log(e);
