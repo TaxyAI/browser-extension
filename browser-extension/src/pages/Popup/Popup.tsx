@@ -1,8 +1,8 @@
 import { Box, ChakraProvider, Heading, Text } from '@chakra-ui/react';
 import React from 'react';
-import QA from './QA';
 import { useSyncStorage } from '../../state';
 import SetKey from '../../common/SetKey';
+import TextToJS from './TextToJS';
 
 const Popup = () => {
   const [openAIKey] = useSyncStorage('openai-key');
@@ -11,14 +11,14 @@ const Popup = () => {
     <ChakraProvider>
       <Box p="8" fontSize="lg" w="xl">
         <Heading as="h1" size="lg" mb={4}>
-          Leo GPT Search
+          LLM Browser Tools
         </Heading>
         <Text fontSize="lg" mb="4">
-          Leo uses GPT-3 to answer questions about the site you're on. Type in a
-          question, and we'll send it along with the text of the current page to
-          GPT-3.
+          LLM Browser Tools uses OpenAI's GPT-3 API to generate code from
+          instructions and executes it in your browser. Try telling it to click
+          a button, or to add a new div to the page.
         </Text>
-        {openAIKey ? <QA /> : <SetKey />}
+        {openAIKey ? <TextToJS /> : <SetKey />}
       </Box>
     </ChakraProvider>
   );
