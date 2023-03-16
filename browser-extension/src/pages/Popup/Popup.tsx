@@ -9,7 +9,7 @@ const Popup = () => {
 
   return (
     <ChakraProvider>
-      <Box p="8" fontSize="lg" w="xl">
+      <Box p="8" fontSize="lg" w={800}>
         <Heading as="h1" size="lg" mb={4}>
           LLM Browser Tools
         </Heading>

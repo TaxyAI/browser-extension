@@ -194,6 +194,9 @@ var options = {
   infrastructureLogging: {
     level: 'info',
   },
+  experiments: {
+    asyncWebAssembly: true,
+  },
 };
 
 if (env.NODE_ENV === 'development') {

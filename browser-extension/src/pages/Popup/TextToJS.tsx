@@ -18,17 +18,38 @@ import {
 } from '@chakra-ui/react';
 import { ChatIcon, CopyIcon } from '@chakra-ui/icons';
 import { getPageHTML, getRelevantHTML } from '../../helpers/getHTML';
-import Markdown from 'marked-react';
+import prettier from 'prettier/standalone';
+import parserHTML from 'prettier/parser-html';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { encoding_for_model } from '@dqbd/tiktoken';
+
+const enc = encoding_for_model('gpt-3.5-turbo');
 
 const TextToJS = () => {
   const [instructionsContent, setInstructionsContent] = React.useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [loading, setLoading] = React.useState(false);
   const [relevantHTML, setRelevantHTML] = React.useState('');
+  const relevantHTMLNumTokens = useMemo(
+    () => enc.encode(relevantHTML).length,
+    [relevantHTML]
+  );
+  const prettyRelevantHTML = useMemo(() => {
+    if (!relevantHTML) return '';
+    return <PrettyHTML html={relevantHTML} />;
+  }, [relevantHTML]);
 
   const toast = useToast();
 
   const [pageHTML, setPageHTML] = React.useState('');
+  const pageHTMLNumTokens = useMemo(
+    () => enc.encode(pageHTML).length,
+    [pageHTML]
+  );
+  const prettyPageHTML = useMemo(() => {
+    if (!pageHTML) return '';
+    return <PrettyHTML html={pageHTML} />;
+  }, [pageHTML]);
 
   useEffect(() => {
     const loadPageHTML = async () => {
@@ -105,14 +126,19 @@ const TextToJS = () => {
                     }
                   }}
                 />
+                {relevantHTMLNumTokens > 0 && (
+                  <Text as="span" fontSize="sm" color="gray.500">
+                    {relevantHTMLNumTokens} tokens
+                  </Text>
+                )}
               </HStack>
               <AccordionIcon />
             </AccordionButton>
           </Heading>
           <AccordionPanel pb={4} maxH="lg" overflow="scroll">
-            {relevantHTML && (
+            {prettyRelevantHTML && (
               <Box css={{ p: { marginBottom: '1em' } }}>
-                <Markdown>{relevantHTML}</Markdown>
+                {prettyRelevantHTML}
               </Box>
             )}
           </AccordionPanel>
@@ -139,20 +165,36 @@ const TextToJS = () => {
                     }
                   }}
                 />
+                {pageHTMLNumTokens > 0 && (
+                  <Text as="span" fontSize="sm" color="gray.500">
+                    {pageHTMLNumTokens} tokens
+                  </Text>
+                )}
               </HStack>
               <AccordionIcon />
             </AccordionButton>
           </Heading>
           <AccordionPanel pb={4} maxH="lg" overflow="scroll">
-            {pageHTML && (
-              <Box css={{ p: { marginBottom: '1em' } }}>
-                <Markdown langPrefix="html">{pageHTML}</Markdown>
-              </Box>
+            {prettyPageHTML && (
+              <Box css={{ p: { marginBottom: '1em' } }}>{prettyPageHTML}</Box>
             )}
           </AccordionPanel>
         </AccordionItem>
       </Accordion>
     </>
+  );
+};
+
+const PrettyHTML = ({ html }: { html: string }) => {
+  const formattedHTML = prettier.format(html, {
+    parser: 'html',
+    plugins: [parserHTML],
+    htmlWhitespaceSensitivity: 'ignore',
+  });
+  return (
+    <SyntaxHighlighter language="htmlbars" customStyle={{ fontSize: 12 }}>
+      {formattedHTML}
+    </SyntaxHighlighter>
   );
 };
 

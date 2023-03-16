@@ -2,6 +2,9 @@
   "manifest_version": 3,
   "name": "LLM Browser Tools",
   "description": "A chrome extension to help you execute arbitrary javascript on any website based on natural text commands",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
   "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },
   "permissions": ["tabs", "activeTab", "history", "storage"],
