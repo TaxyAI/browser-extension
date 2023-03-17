@@ -1,5 +1,5 @@
 export const mapHTML = (html: string) => {
-  html
+  return html
     .replaceAll('<div', '<d')
     .replaceAll('</div>', '</d>')
     .replaceAll('<span', '<s')
@@ -7,5 +7,4 @@ export const mapHTML = (html: string) => {
     .replaceAll('<button', '<b')
     .replaceAll('</button>', '</b>')
     .replaceAll('aria-label', 'a-l');
-  return html;
 };
