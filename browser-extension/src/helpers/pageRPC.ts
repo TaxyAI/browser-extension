@@ -32,10 +32,12 @@ export const callRPC = async <T extends MethodName>(
   }
 
   if (!activeTab?.id) throw new Error('No active tab found');
+  console.log('sending message', type, payload, activeTab.id);
   const response: MethodRT<T> = await chrome.tabs.sendMessage(activeTab.id, {
     type,
     payload,
   });
+  console.log('got response', response);
 
   return response;
 };
@@ -49,6 +51,7 @@ export const watchForRPCRequests = () => {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const type = message.type;
     if (isKnownMethodName(type)) {
+      // console.log('got message', type, message.payload);
       const resp = methods[type](message.payload);
       if (resp instanceof Promise) {
         resp.then(sendResponse);

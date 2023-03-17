@@ -1,22 +1,50 @@
-type ElementsResult = {
-  pageElements: HTMLElement[];
-  clonedDOM: Node;
-};
+function isInteractive(
+  element: HTMLElement,
+  style: CSSStyleDeclaration
+): boolean {
+  return (
+    element.tagName === 'A' ||
+    element.tagName === 'INPUT' ||
+    element.tagName === 'BUTTON' ||
+    element.tagName === 'SELECT' ||
+    element.tagName === 'TEXTAREA' ||
+    element.hasAttribute('onclick') ||
+    element.hasAttribute('onmousedown') ||
+    element.hasAttribute('onmouseup') ||
+    element.hasAttribute('onkeydown') ||
+    element.hasAttribute('onkeyup') ||
+    style.cursor === 'pointer'
+  );
+}
 
-function traverseDOM(
-  node: Node,
-  pageElements: HTMLElement[] = []
-): ElementsResult {
+function isVisible(element: HTMLElement, style: CSSStyleDeclaration): boolean {
+  return (
+    style.opacity !== '' &&
+    style.display !== 'none' &&
+    style.visibility !== 'hidden' &&
+    style.opacity !== '0' &&
+    element.getAttribute('aria-hidden') !== 'true'
+  );
+}
+
+function traverseDOM(node: Node, pageElements: HTMLElement[] = []) {
   const clonedNode = node.cloneNode(false) as Node;
 
   if (node.nodeType === Node.ELEMENT_NODE) {
     const element = node as HTMLElement;
+    const style = window.getComputedStyle(element);
+
     const clonedElement = clonedNode as HTMLElement;
 
     pageElements.push(element);
+    clonedElement.setAttribute('data-id', (pageElements.length - 1).toString());
     clonedElement.setAttribute(
-      'data-llm-id',
-      (pageElements.length - 1).toString()
+      'data-interactive',
+      isInteractive(element, style).toString()
+    );
+    clonedElement.setAttribute(
+      'data-visible',
+      isVisible(element, style).toString()
     );
   }
 
@@ -37,6 +65,7 @@ function traverseDOM(
  */
 export default function getAnnotatedDOM() {
   const result = traverseDOM(document.documentElement);
-  console.log(result);
+  // console.log(result);
+  // console.log(result.clonedDOM.outerHTML);
   return result.clonedDOM.outerHTML;
 }

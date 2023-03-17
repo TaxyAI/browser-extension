@@ -5,18 +5,16 @@ import { callRPC } from './pageRPC';
 export async function getSimplifiedDom() {
   const fullDom = await callRPC('get-annotated-dom');
 
-  console.log('fullDom', fullDom);
-
   const dom = new DOMParser().parseFromString(fullDom, 'text/html');
+
+  // Mount the DOM to the document in an iframe so we can use getComputedStyle
 
   let interactiveElements: HTMLElement[] = [];
 
   const simplifiedDom = generateSimplifiedDom(
-    dom.body,
+    dom.documentElement,
     interactiveElements
   ) as HTMLElement;
-
-  console.log(simplifiedDom);
 
   return simplifiedDom.outerHTML;
 }
@@ -26,28 +24,11 @@ function truthyFilter<T>(value: T | null | undefined): value is T {
 }
 
 function isInteractive(element: HTMLElement): boolean {
-  return (
-    element.tagName === 'A' ||
-    element.tagName === 'INPUT' ||
-    element.tagName === 'BUTTON' ||
-    element.tagName === 'SELECT' ||
-    element.tagName === 'TEXTAREA' ||
-    element.hasAttribute('onclick') ||
-    element.hasAttribute('onmousedown') ||
-    element.hasAttribute('onmouseup') ||
-    element.hasAttribute('onkeydown') ||
-    element.hasAttribute('onkeyup')
-  );
+  return element.getAttribute('data-interactive') === 'true';
 }
 
 function isVisible(element: HTMLElement): boolean {
-  const style = window.getComputedStyle(element);
-  return (
-    style.display !== 'none' &&
-    style.visibility !== 'hidden' &&
-    style.opacity !== '0' &&
-    element.getAttribute('aria-hidden') !== 'true'
-  );
+  return element.getAttribute('data-visible') === 'true';
 }
 
 function generateSimplifiedDom(

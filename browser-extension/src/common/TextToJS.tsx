@@ -34,6 +34,7 @@ const TextToJS = () => {
 
   const toast = useToast();
 
+  console.log('hi');
   const simplifiedHTML = useAsync(getSimplifiedDom, []);
   const mappedHTML = useMemo(() => {
     if (!simplifiedHTML.value) return '';
