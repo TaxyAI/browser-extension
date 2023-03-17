@@ -23,14 +23,6 @@ function truthyFilter<T>(value: T | null | undefined): value is T {
   return Boolean(value);
 }
 
-function isInteractive(element: HTMLElement): boolean {
-  return element.getAttribute('data-interactive') === 'true';
-}
-
-function isVisible(element: HTMLElement): boolean {
-  return element.getAttribute('data-visible') === 'true';
-}
-
 function generateSimplifiedDom(
   element: ChildNode,
   interactiveElements: HTMLElement[]
@@ -41,13 +33,14 @@ function generateSimplifiedDom(
 
   if (!(element instanceof HTMLElement)) return null;
 
-  if (!isVisible(element)) return null;
+  const isVisible = element.getAttribute('data-visible') === 'true';
+  if (!isVisible) return null;
 
   const children = Array.from(element.childNodes)
     .map((c) => generateSimplifiedDom(c, interactiveElements))
     .filter(truthyFilter);
 
-  const interactive = isInteractive(element);
+  const interactive = element.getAttribute('data-interactive') === 'true';
   const hasLabel = element.hasAttribute('aria-label');
   const includeNode = interactive || hasLabel;
 
@@ -58,13 +51,10 @@ function generateSimplifiedDom(
 
   const allowedAttributes = [
     'aria-label',
-    // 'for',
-    // 'id',
-    // 'name',
-    // 'type',
+    'name',
+    'type',
     'placeholder',
-    // 'href',
-    'alt',
+    'value',
   ];
 
   for (const attr of allowedAttributes) {
