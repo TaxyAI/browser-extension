@@ -22,6 +22,8 @@ import { encoding_for_model } from '@dqbd/tiktoken';
 import { useAsync } from 'react-use';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { mapHTML } from '../helpers/mapHTML';
+import { performQuery } from '../helpers/performQuery';
+import ReactSyntaxHighlighter from 'react-syntax-highlighter';
 
 const enc = encoding_for_model('gpt-3.5-turbo');
 
@@ -56,13 +58,27 @@ const TextToJS = () => {
     return <PrettyHTML html={mappedHTML} />;
   }, [mappedHTML]);
 
+  const [code, setCode] = React.useState('');
+
   const onSubmitInstructions = useCallback(
-    async (instructions: string, simplifiedHTML: string) => {
+    async (instructions: string, mappedHTML: string) => {
       setLoading(true);
 
-      // Generate code from instructions
-
-      setLoading(false);
+      try {
+        // Generate code from instructions
+        const output = await performQuery(instructions, mappedHTML);
+        setCode(output);
+      } catch (e: any) {
+        toast({
+          title: 'Error',
+          description: e.message,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setLoading(false);
+      }
     },
     []
   );
@@ -98,6 +114,45 @@ const TextToJS = () => {
         Submit Instructions
       </Button>
       <Accordion allowToggle>
+        {/* Generated Code */}
+        <AccordionItem>
+          <Heading as="h2" size="md">
+            <AccordionButton>
+              <HStack flex="1">
+                <Box as="span" textAlign="left" mr="4">
+                  Generated Code
+                </Box>
+                <CopyIcon
+                  onClick={(event) => {
+                    event.preventDefault();
+                    if (mappedHTML) {
+                      navigator.clipboard.writeText(mappedHTML);
+                      toast({
+                        title: 'Copied to clipboard',
+                        status: 'success',
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                    }
+                  }}
+                />
+              </HStack>
+              <AccordionIcon />
+            </AccordionButton>
+          </Heading>
+          <AccordionPanel pb={4} maxH="lg" overflow="scroll">
+            {code && (
+              <Box css={{ p: { marginBottom: '1em' } }}>
+                <ReactSyntaxHighlighter
+                  language="javascript"
+                  customStyle={{ fontSize: 12 }}
+                >
+                  {code}
+                </ReactSyntaxHighlighter>
+              </Box>
+            )}
+          </AccordionPanel>
+        </AccordionItem>
         {/* Mapped HTML */}
         <AccordionItem>
           <Heading as="h2" size="md">
