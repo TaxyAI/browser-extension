@@ -13,6 +13,7 @@ import {
   AccordionButton,
   useToast,
   HStack,
+  VStack,
 } from '@chakra-ui/react';
 import { ChatIcon, CopyIcon } from '@chakra-ui/icons';
 import prettier from 'prettier/standalone';
@@ -34,7 +35,6 @@ const TextToJS = () => {
 
   const toast = useToast();
 
-  console.log('hi');
   const simplifiedHTML = useAsync(getSimplifiedDom, []);
   const mappedHTML = useMemo(() => {
     if (!simplifiedHTML.value) return '';
@@ -114,46 +114,42 @@ const TextToJS = () => {
       >
         Submit Instructions
       </Button>
+      {/* Generated Code */}
+      {code && (
+        <VStack>
+          <HStack w="full">
+            <Box as="span" textAlign="left" mr="4">
+              Generated Code
+            </Box>
+            <CopyIcon
+              onClick={(event) => {
+                event.preventDefault();
+                if (code) {
+                  navigator.clipboard.writeText(code);
+                  toast({
+                    title: 'Copied to clipboard',
+                    status: 'success',
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                }
+              }}
+            />
+          </HStack>
+
+          <Box w="full" css={{ p: { marginBottom: '1em' } }}>
+            <ReactSyntaxHighlighter
+              language="javascript"
+              customStyle={{ fontSize: 12 }}
+              wrapLines
+              wrapLongLines
+            >
+              {code}
+            </ReactSyntaxHighlighter>
+          </Box>
+        </VStack>
+      )}
       <Accordion allowToggle>
-        {/* Generated Code */}
-        <AccordionItem>
-          <Heading as="h2" size="md">
-            <AccordionButton>
-              <HStack flex="1">
-                <Box as="span" textAlign="left" mr="4">
-                  Generated Code
-                </Box>
-                <CopyIcon
-                  onClick={(event) => {
-                    event.preventDefault();
-                    if (mappedHTML) {
-                      navigator.clipboard.writeText(mappedHTML);
-                      toast({
-                        title: 'Copied to clipboard',
-                        status: 'success',
-                        duration: 3000,
-                        isClosable: true,
-                      });
-                    }
-                  }}
-                />
-              </HStack>
-              <AccordionIcon />
-            </AccordionButton>
-          </Heading>
-          <AccordionPanel pb={4} maxH="lg" overflow="scroll">
-            {code && (
-              <Box css={{ p: { marginBottom: '1em' } }}>
-                <ReactSyntaxHighlighter
-                  language="javascript"
-                  customStyle={{ fontSize: 12 }}
-                >
-                  {code}
-                </ReactSyntaxHighlighter>
-              </Box>
-            )}
-          </AccordionPanel>
-        </AccordionItem>
         {/* Mapped HTML */}
         <AccordionItem>
           <Heading as="h2" size="md">
