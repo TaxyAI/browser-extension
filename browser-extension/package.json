@@ -1,11 +1,11 @@
 {
-  "name": "leo-bot",
+  "name": "llm-browser-tools",
   "version": "0.0.1",
   "description": "Answer questions based on the content of the current page",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/corbt/leo-bot.git"
+    "url": "https://github.com/llm-lol/llm-browser-tooling.git"
   },
   "scripts": {
     "build": "node utils/build.js",

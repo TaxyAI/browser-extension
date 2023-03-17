@@ -19,9 +19,9 @@ import prettier from 'prettier/standalone';
 import parserHTML from 'prettier/parser-html';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { encoding_for_model } from '@dqbd/tiktoken';
-import { mapHTML } from '../../helpers/mapHTML';
 import { useAsync } from 'react-use';
-import { getSimplifiedDom } from '../../helpers/simplifyDom';
+import { getSimplifiedDom } from '../helpers/simplifyDom';
+import { mapHTML } from '../helpers/mapHTML';
 
 const enc = encoding_for_model('gpt-3.5-turbo');
 
