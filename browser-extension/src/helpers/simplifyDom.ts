@@ -1,28 +1,25 @@
 // console.log('Content script loaded..');
 
-const MESSAGE_TYPE = 'get-simplified-dom';
+import { callRPC } from './pageRPC';
 
-// Extension context
+export async function getSimplifiedDom() {
+  const fullDom = await callRPC('get-annotated-dom');
 
-export async function requestSimplifiedDom() {
-  let queryOptions = { active: true, currentWindow: true };
-  let activeTab = (await chrome.tabs.query(queryOptions))[0];
+  console.log('fullDom', fullDom);
 
-  // If the active tab is a chrome-extension:// page, then we need to get some random other tab for testing
-  if (activeTab.url?.startsWith('chrome')) {
-    queryOptions = { active: false, currentWindow: true };
-    activeTab = (await chrome.tabs.query(queryOptions))[0];
-  }
+  const dom = new DOMParser().parseFromString(fullDom, 'text/html');
 
-  if (!activeTab?.id) throw new Error('No active tab found');
-  const response: string = await chrome.tabs.sendMessage(activeTab.id, {
-    type: MESSAGE_TYPE,
-  });
+  let interactiveElements: HTMLElement[] = [];
 
-  return response;
+  const simplifiedDom = generateSimplifiedDom(
+    dom.body,
+    interactiveElements
+  ) as HTMLElement;
+
+  console.log(simplifiedDom);
+
+  return simplifiedDom.outerHTML;
 }
-
-// Page context
 
 function truthyFilter<T>(value: T | null | undefined): value is T {
   return Boolean(value);
@@ -80,10 +77,10 @@ function generateSimplifiedDom(
 
   const allowedAttributes = [
     'aria-label',
-    'for',
-    'id',
-    'name',
-    'type',
+    // 'for',
+    // 'id',
+    // 'name',
+    // 'type',
     'placeholder',
     // 'href',
     'alt',
@@ -98,32 +95,10 @@ function generateSimplifiedDom(
   if (interactive) {
     const index = interactiveElements.length;
     interactiveElements.push(element);
-    container.setAttribute('onclick', `onclick(${index})`);
+    container.setAttribute('id', index.toString());
   }
 
   children.forEach((child) => container.appendChild(child));
 
   return container;
 }
-
-function generateSimplifiedDomForPage() {
-  let interactiveElements: HTMLElement[] = [];
-
-  const simplifiedDom = generateSimplifiedDom(
-    document.querySelector('body') as HTMLElement,
-    interactiveElements
-  );
-
-  // console.log(simplifiedDom);
-
-  return simplifiedDom;
-}
-
-// Run this in the page context
-export const watchForSimplifyDomRequest = () => {
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === MESSAGE_TYPE) {
-      sendResponse(generateSimplifiedDomForPage()?.outerHTML);
-    }
-  });
-};

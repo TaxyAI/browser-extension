@@ -1,27 +1,6 @@
-import React, { useEffect, useMemo, useRef } from 'react';
-import {
-  Box,
-  Text,
-  Heading,
-  Button,
-  Spinner,
-  Textarea,
-  Accordion,
-  AccordionItem,
-  AccordionPanel,
-  AccordionIcon,
-  AccordionButton,
-  Alert,
-  AlertIcon,
-  Stack,
-  Input,
-  Link,
-} from '@chakra-ui/react';
-import { ChatIcon, CheckIcon } from '@chakra-ui/icons';
-import { useAsync } from 'react-use';
-import getPageContent from './getPageContent';
-import Markdown from 'marked-react';
-import { formatPrompt, performQuery } from '../pages/Popup/performQuery';
+import { CheckIcon } from '@chakra-ui/icons';
+import { Button, Input, Link, Stack, Text } from '@chakra-ui/react';
+import React from 'react';
 import { useSyncStorage } from '../state';
 
 const SetKey = () => {

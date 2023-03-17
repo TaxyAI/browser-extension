@@ -19,9 +19,9 @@ import prettier from 'prettier/standalone';
 import parserHTML from 'prettier/parser-html';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { encoding_for_model } from '@dqbd/tiktoken';
-import { requestSimplifiedDom } from '../../helpers/simplifyDom';
 import { mapHTML } from '../../helpers/mapHTML';
 import { useAsync } from 'react-use';
+import { getSimplifiedDom } from '../../helpers/simplifyDom';
 
 const enc = encoding_for_model('gpt-3.5-turbo');
 
@@ -32,7 +32,7 @@ const TextToJS = () => {
 
   const toast = useToast();
 
-  const simplifiedHTML = useAsync(requestSimplifiedDom, []);
+  const simplifiedHTML = useAsync(getSimplifiedDom, []);
   const mappedHTML = useMemo(() => {
     if (!simplifiedHTML.value) return '';
     return mapHTML(simplifiedHTML.value);

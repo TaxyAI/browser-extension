@@ -1,25 +1,25 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { ChatIcon, CopyIcon } from '@chakra-ui/icons';
 import {
-  Box,
-  Text,
-  Heading,
-  Button,
-  Spinner,
-  Textarea,
   Accordion,
+  AccordionButton,
+  AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  AccordionIcon,
-  AccordionButton,
   Alert,
   AlertIcon,
-  useToast,
+  Box,
+  Button,
+  Heading,
   HStack,
+  Spinner,
+  Text,
+  Textarea,
+  useToast,
 } from '@chakra-ui/react';
-import { ChatIcon, CopyIcon } from '@chakra-ui/icons';
+import Markdown from 'marked-react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { useAsync } from 'react-use';
 import getPageContent from '../../common/getPageContent';
-import Markdown from 'marked-react';
 import { performQuery, RecordedMessage } from './performQuery';
 
 const QA = () => {
