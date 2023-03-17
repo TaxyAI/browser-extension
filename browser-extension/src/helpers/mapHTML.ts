@@ -1,10 +1,8 @@
 export const mapHTML = (html: string) => {
-  return html
-    .replaceAll('<div', '<d')
-    .replaceAll('</div>', '</d>')
-    .replaceAll('<span', '<s')
-    .replaceAll('</span>', '</s>')
-    .replaceAll('<button', '<b')
-    .replaceAll('</button>', '</b>')
-    .replaceAll('aria-label', 'a-l');
+  // Regular expression to match empty elements
+  const re = /<([a-z]+)([^<]*?)><\/\1>/gi;
+
+  // Replace empty elements with self-closing tags
+  const newHtml = html.replace(re, '<$1$2 />');
+  return newHtml;
 };
