@@ -3,13 +3,9 @@ import React from 'react';
 import { useSyncStorage } from '../../state';
 import SetKey from '../../common/SetKey';
 import TextToJS from './TextToJS';
-import { useAsync } from 'react-use';
-import { requestSimplifiedDom } from '../../helpers/simplifyDom';
 
 const Popup = () => {
   const [openAIKey] = useSyncStorage('openai-key');
-
-  const simpleDom = useAsync(requestSimplifiedDom);
 
   return (
     <ChakraProvider>

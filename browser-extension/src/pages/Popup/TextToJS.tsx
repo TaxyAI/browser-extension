@@ -23,6 +23,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { encoding_for_model } from '@dqbd/tiktoken';
 import { requestSimplifiedDom } from '../../helpers/simplifyDom';
 import { mapHTML } from '../../helpers/mapHTML';
+import { useAsync } from 'react-use';
 
 const enc = encoding_for_model('gpt-3.5-turbo');
 
@@ -33,17 +34,21 @@ const TextToJS = () => {
 
   const toast = useToast();
 
-  const [simplifiedHTML, setSimplifiedHTML] = React.useState('');
-  const simplifiedHTMLNumTokens = useMemo(
-    () => enc.encode(simplifiedHTML).length,
-    [simplifiedHTML]
-  );
-  const prettySimplifiedHTML = useMemo(() => {
-    if (!simplifiedHTML) return '';
-    return <PrettyHTML html={simplifiedHTML} />;
+  const simplifiedHTML = useAsync(requestSimplifiedDom, []);
+  const mappedHTML = useMemo(() => {
+    if (!simplifiedHTML.value) return '';
+    return mapHTML(simplifiedHTML.value);
   }, [simplifiedHTML]);
 
-  const [mappedHTML, setMappedHTML] = React.useState('');
+  const simplifiedHTMLNumTokens = useMemo(
+    () => enc.encode(simplifiedHTML.value ?? '').length,
+    [simplifiedHTML]
+  );
+  const prettySimplifiedHTML = useMemo(
+    () => <PrettyHTML html={simplifiedHTML.value ?? ''} />,
+    [simplifiedHTML]
+  );
+
   const mappedHTMLNumTokens = useMemo(
     () => enc.encode(mappedHTML).length,
     [mappedHTML]
@@ -52,16 +57,6 @@ const TextToJS = () => {
     if (!mappedHTML) return '';
     return <PrettyHTML html={mappedHTML} />;
   }, [mappedHTML]);
-
-  useEffect(() => {
-    const loadSimplifiedHTML = async () => {
-      const simplifiedHTML = await requestSimplifiedDom();
-      setSimplifiedHTML(simplifiedHTML);
-      const mappedHTML = mapHTML(simplifiedHTML);
-      setMappedHTML(mappedHTML);
-    };
-    loadSimplifiedHTML();
-  }, []);
 
   const onSubmitInstructions = useCallback(
     async (instructions: string, simplifiedHTML: string) => {
@@ -77,7 +72,7 @@ const TextToJS = () => {
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onSubmitInstructions(instructionsContent, simplifiedHTML);
+      onSubmitInstructions(instructionsContent, simplifiedHTML?.value ?? '');
     }
   };
 
@@ -96,10 +91,10 @@ const TextToJS = () => {
       <Button
         leftIcon={loading ? <Spinner /> : <ChatIcon />}
         onClick={() =>
-          onSubmitInstructions(instructionsContent, simplifiedHTML)
+          onSubmitInstructions(instructionsContent, simplifiedHTML.value ?? '')
         }
         colorScheme="blue"
-        disabled={loading || !instructionsContent || !simplifiedHTML}
+        disabled={loading || !instructionsContent || !simplifiedHTML.value}
         mb={4}
       >
         Submit Instructions
@@ -153,8 +148,8 @@ const TextToJS = () => {
                 <CopyIcon
                   onClick={(event) => {
                     event.preventDefault();
-                    if (simplifiedHTML) {
-                      navigator.clipboard.writeText(simplifiedHTML);
+                    if (simplifiedHTML.value) {
+                      navigator.clipboard.writeText(simplifiedHTML.value);
                       toast({
                         title: 'Copied to clipboard',
                         status: 'success',

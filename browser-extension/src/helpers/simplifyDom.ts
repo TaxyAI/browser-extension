@@ -114,7 +114,7 @@ function generateSimplifiedDomForPage() {
     interactiveElements
   );
 
-  console.log(simplifiedDom, interactiveElements);
+  // console.log(simplifiedDom);
 
   return simplifiedDom;
 }
