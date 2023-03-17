@@ -13,9 +13,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// @ts-ignore
-window.click = function click(x: number, y: number) {
-  const ev = new MouseEvent('click', {
+function click(x: number, y: number) {
+  const clickEvent = new MouseEvent('click', {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+    screenX: x,
+    screenY: y,
+  });
+
+  const mousedownEvent = new MouseEvent('mousedown', {
     view: window,
     bubbles: true,
     cancelable: true,
@@ -25,8 +32,11 @@ window.click = function click(x: number, y: number) {
 
   const el: any = document.elementFromPoint(x, y);
 
-  el.dispatchEvent(ev);
-};
+  el.dispatchEvent(clickEvent);
+  el.dispatchEvent(mousedownEvent);
+}
+// @ts-ignore
+window.click = click;
 
 // @ts-ignore
 window.logMouseCoordinates = function logMouseCoordinates() {
@@ -35,8 +45,7 @@ window.logMouseCoordinates = function logMouseCoordinates() {
   });
 };
 
-// @ts-ignore
-window.simulateFocusedInputEdit = function simulateFocusedInputEdit(newValue) {
+function simulateFocusedInputEdit(newValue: string) {
   // Get the currently focused input element
   var inputElement = document.activeElement;
 
@@ -50,7 +59,7 @@ window.simulateFocusedInputEdit = function simulateFocusedInputEdit(newValue) {
     return;
   }
 
-  // Edit the input value
+  // @ts-ignore
   inputElement.value = newValue;
 
   // Trigger the input event to simulate an update
@@ -66,18 +75,22 @@ window.simulateFocusedInputEdit = function simulateFocusedInputEdit(newValue) {
     cancelable: true,
   });
   inputElement.dispatchEvent(changeEvent);
-};
-
+}
 // @ts-ignore
-window.clickAndEdit = function clickAndEdit(x, y, newValue) {
+window.simulateFocusedInputEdit = simulateFocusedInputEdit;
+
+function clickAndEdit(x: number, y: number, newValue: string) {
   // Click the element
-  window.click(x, y);
+
+  click(x, y);
 
   // Wait for the element to be focused
   setTimeout(() => {
     // Edit the input value
-    window.simulateFocusedInputEdit(newValue);
+    simulateFocusedInputEdit(newValue);
   }, 100);
-};
+}
+// @ts-ignore
+window.clickAndEdit = clickAndEdit;
 
 watchForRPCRequests();
