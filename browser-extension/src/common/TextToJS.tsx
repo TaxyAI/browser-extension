@@ -24,7 +24,6 @@ import { useAsync } from 'react-use';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { mapHTML } from '../helpers/mapHTML';
 import { performQuery } from '../helpers/performQuery';
-import ReactSyntaxHighlighter from 'react-syntax-highlighter';
 import extractActions from '../helpers/extractActions';
 import { callRPC } from '../helpers/pageRPC';
 import { MOST_RECENT_QUERY, useSyncStorage } from '../state';
@@ -153,14 +152,14 @@ const TextToJS = () => {
           </HStack>
 
           <Box w="full" css={{ p: { marginBottom: '1em' } }}>
-            <ReactSyntaxHighlighter
+            <SyntaxHighlighter
               language="javascript"
               customStyle={{ fontSize: 12 }}
               wrapLines
               wrapLongLines
             >
               {code}
-            </ReactSyntaxHighlighter>
+            </SyntaxHighlighter>
           </Box>
         </VStack>
       )}
