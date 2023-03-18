@@ -1,34 +1,46 @@
 export function click({ x, y }: { x: number; y: number }) {
-  const mousedownEvent = new MouseEvent('mousedown', {
-    view: window,
-    bubbles: true,
-    cancelable: true,
-    screenX: x,
-    screenY: y,
-  });
+  // Get the element at the specified coordinates
+  const targetElement = document.elementFromPoint(x, y);
 
-  const mouseUpEvent = new MouseEvent('mouseup', {
-    view: window,
-    bubbles: true,
-    cancelable: true,
-    screenX: x,
-    screenY: y,
-  });
+  // If an element is found, create and dispatch mouse events
+  if (targetElement) {
+    const mouseEvents = ['mousedown', 'mouseup', 'click'];
 
-  const clickEvent = new MouseEvent('click', {
-    view: window,
-    bubbles: true,
-    cancelable: true,
-    screenX: x,
-    screenY: y,
-  });
+    mouseEvents.forEach((eventType) => {
+      const event = new MouseEvent(eventType, {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX: x,
+        clientY: y,
+      });
 
-  const el: any = document.elementFromPoint(x, y);
+      targetElement.dispatchEvent(event);
+    });
 
-  el.dispatchEvent(mousedownEvent);
-  el.dispatchEvent(mouseUpEvent);
-  el.dispatchEvent(clickEvent);
+    // Custom focus event for input and textarea elements
+    // @ts-ignore
+    function focusElement(element) {
+      const focusEvent = new FocusEvent('focus', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      });
+
+      element.dispatchEvent(focusEvent);
+      element.focus();
+    }
+
+    // If the target element is an input or textarea, trigger the custom focus event
+    if (['INPUT', 'TEXTAREA'].includes(targetElement.tagName)) {
+      focusElement(targetElement);
+    }
+  } else {
+    console.warn(`No element found at the specified coordinates (${x}, ${y})`);
+  }
 }
+// @ts-ignore
+window.click = (x, y) => click({ x, y });
 
 function simulateFocusedInputEdit(newValue: string) {
   // Get the currently focused input element

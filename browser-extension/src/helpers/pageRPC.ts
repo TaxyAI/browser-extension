@@ -3,7 +3,9 @@ import getAnnotatedDOM, { clickElement, setValue } from './getAnnotatedDOM';
 export const methods = {
   'get-annotated-dom': getAnnotatedDOM,
   'click-element': clickElement,
+  clickElement,
   'set-value': setValue,
+  setValue,
 } as const;
 
 export type Methods = typeof methods;
