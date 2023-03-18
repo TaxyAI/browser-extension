@@ -1,0 +1,14 @@
+{
+  "type": "module",
+  "engines": {
+    "node": ">=19.0.0"
+  },
+  "scripts": {
+    "start": "tsx --watch src/index.ts"
+  },
+  "dependencies": {
+    "puppeteer": "^19.7.5",
+    "tsx": "^3.12.5",
+    "typescript": "^5.0.2"
+  }
+}

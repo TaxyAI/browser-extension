@@ -27,7 +27,9 @@ function isVisible(element: HTMLElement, style: CSSStyleDeclaration): boolean {
   );
 }
 
-function traverseDOM(node: Node, pageElements: HTMLElement[] = []) {
+let currentElements: HTMLElement[] = [];
+
+function traverseDOM(node: Node, pageElements: HTMLElement[]) {
   const clonedNode = node.cloneNode(false) as Node;
 
   if (node.nodeType === Node.ELEMENT_NODE) {
@@ -64,8 +66,29 @@ function traverseDOM(node: Node, pageElements: HTMLElement[] = []) {
  * with data-pe-idx attributes added to each element in the copy.
  */
 export default function getAnnotatedDOM() {
-  const result = traverseDOM(document.documentElement);
+  currentElements = [];
+  const result = traverseDOM(document.documentElement, currentElements);
+  console.log('currentElements length', currentElements.length);
+  window.currentElements = currentElements;
   // console.log(result);
   // console.log(result.clonedDOM.outerHTML);
   return result.clonedDOM.outerHTML;
 }
+
+export function clickElement(id: number) {
+  const element = currentElements[id];
+  if (element) {
+    element.click();
+  }
+}
+
+export function setValue(id: number, value: string) {
+  const element = currentElements[id];
+  console.log('setValue', id, value, element);
+  if (element && 'value' in element) {
+    element.value = value;
+  }
+}
+
+window.clickElement = clickElement;
+window.setValue = setValue;

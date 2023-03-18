@@ -31,18 +31,29 @@ function generateSimplifiedDom(
     return document.createTextNode(element.textContent + ' ');
   }
 
-  if (!(element instanceof HTMLElement)) return null;
+  if (!(element instanceof HTMLElement || element instanceof SVGElement))
+    return null;
 
   const isVisible = element.getAttribute('data-visible') === 'true';
   if (!isVisible) return null;
 
-  const children = Array.from(element.childNodes)
+  let children = Array.from(element.childNodes)
     .map((c) => generateSimplifiedDom(c, interactiveElements))
     .filter(truthyFilter);
 
+  // Don't bother with text that is the direct child of the body
+  if (element.tagName === 'BODY')
+    children = children.filter((c) => c.nodeType !== Node.TEXT_NODE);
+
   const interactive = element.getAttribute('data-interactive') === 'true';
-  const hasLabel = element.hasAttribute('aria-label');
+  const hasLabel =
+    element.hasAttribute('aria-label') || element.hasAttribute('name');
   const includeNode = interactive || hasLabel;
+
+  console.log('element', element.tagName, includeNode, interactive, hasLabel);
+  if (element.hasAttribute('data-name')) {
+    console.log('data-name', element.getAttribute('data-name'));
+  }
 
   if (!includeNode && children.length === 0) return null;
   if (!includeNode && children.length === 1) return children[0];
@@ -51,6 +62,7 @@ function generateSimplifiedDom(
 
   const allowedAttributes = [
     'aria-label',
+    'data-name',
     'name',
     'type',
     'placeholder',
