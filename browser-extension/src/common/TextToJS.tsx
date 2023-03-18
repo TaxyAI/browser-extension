@@ -68,7 +68,8 @@ const TextToJS = () => {
   const [code, setCode] = React.useState('');
 
   const onSubmitInstructions = useCallback(
-    async (instructions: string, mappedHTML: string) => {
+    async (instructions: string | null, mappedHTML: string) => {
+      if (!instructions) return;
       setLoading(true);
 
       try {
@@ -111,7 +112,7 @@ const TextToJS = () => {
         autoFocus
         noOfLines={2}
         placeholder="Your question"
-        value={instructionsContent}
+        value={instructionsContent || ''}
         onChange={(e) => setInstructionsContent(e.target.value)}
         mb={2}
         ref={textareaRef}
