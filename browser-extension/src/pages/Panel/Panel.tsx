@@ -1,5 +1,6 @@
-import { Box, Text, ChakraProvider, Heading } from '@chakra-ui/react';
+import { Box, Text, ChakraProvider, Heading, HStack } from '@chakra-ui/react';
 import React from 'react';
+import ModelDropdown from '../../common/ModelDropdown';
 import SetKey from '../../common/SetKey';
 import TextToJS from '../../common/TextToJS';
 import { useSyncStorage } from '../../state';
@@ -11,9 +12,14 @@ const Panel = () => {
   return (
     <ChakraProvider>
       <Box p="8" fontSize="lg" w="full">
-        <Heading as="h1" size="lg" mb={4}>
-          LLM Browser Tooling
-        </Heading>
+        <HStack mb={4} alignItems="center">
+          <Heading as="h1" size="lg" mb={4} flex={1}>
+            LLM Browser Tooling
+          </Heading>
+          <Box flex={1}>
+            <ModelDropdown />
+          </Box>
+        </HStack>
         <Text fontSize="lg" mb="4">
           LLM Browser Tooling uses OpenAI's GPT-3 API to generate code from
           instructions and executes it in your browser. Try telling it to click

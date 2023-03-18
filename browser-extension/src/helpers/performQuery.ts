@@ -1,4 +1,5 @@
 import { Configuration, OpenAIApi } from 'openai';
+import { getValueFromStorage, SELECTED_OPENAI_MODEL } from '../state';
 
 const systemMessage = `
 You are a browser automation assistant.
@@ -20,6 +21,10 @@ export async function performQuery(
   instructions: string,
   simplifiedDOM: string
 ) {
+  const model = (await getValueFromStorage(
+    SELECTED_OPENAI_MODEL,
+    'gpt-3.5-turbo'
+  )) as string;
   const prompt = formatPrompt(instructions, simplifiedDOM);
   const openai = new OpenAIApi(
     new Configuration({
@@ -29,7 +34,7 @@ export async function performQuery(
 
   try {
     const completion = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
+      model: model,
       messages: [
         {
           role: 'system',
@@ -43,7 +48,7 @@ export async function performQuery(
 
     return completion.data.choices[0].message?.content?.trim() || '';
   } catch (error: any) {
-    throw new Error(error.response.data.error.message);
+    throw new Error(model + error.response.data.error.message);
   }
 }
 
