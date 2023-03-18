@@ -78,7 +78,7 @@ function generateSimplifiedDom(
   if (interactive) {
     const index = interactiveElements.length;
     interactiveElements.push(element);
-    container.setAttribute('id', index.toString());
+    container.setAttribute('id', element.getAttribute('data-id') as string);
   }
 
   children.forEach((child) => container.appendChild(child));
