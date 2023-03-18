@@ -1,10 +1,8 @@
 import getAnnotatedDOM, { clickElement, setValue } from './getAnnotatedDOM';
 
 export const methods = {
-  'get-annotated-dom': getAnnotatedDOM,
-  'click-element': clickElement,
+  getAnnotatedDOM,
   clickElement,
-  'set-value': setValue,
   setValue,
 } as const;
 
@@ -44,6 +42,7 @@ const isKnownMethodName = (type: string): type is MethodName => {
 
 // This function should run in the content script
 export const watchForRPCRequests = () => {
+  // @ts-ignore
   window.rpc = methods;
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -51,6 +50,7 @@ export const watchForRPCRequests = () => {
     const type = message.type;
     if (isKnownMethodName(type)) {
       // console.log('got message', type, message.payload);
+      // @ts-ignore
       const resp = methods[type](...message.payload);
       if (resp instanceof Promise) {
         resp.then(sendResponse);

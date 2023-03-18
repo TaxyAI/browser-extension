@@ -2,12 +2,12 @@ import { Methods } from './pageRPC';
 
 type Action =
   | {
-      type: 'click-element';
-      args: Parameters<Methods['click-element']>;
+      type: 'clickElement';
+      args: Parameters<Methods['clickElement']>;
     }
   | {
-      type: 'set-value';
-      args: Parameters<Methods['set-value']>;
+      type: 'setValue';
+      args: Parameters<Methods['setValue']>;
     };
 
 export default function extractActions(text: string): Action[] {
@@ -25,12 +25,12 @@ export default function extractActions(text: string): Action[] {
 
     if (action === 'click') {
       actions.push({
-        type: 'click-element',
+        type: 'clickElement',
         args: [parseInt(args[0].replace(/^element\((\d+)\)$/, '$1'))],
       });
     } else if (action === 'setValue') {
       actions.push({
-        type: 'set-value',
+        type: 'setValue',
         args: [parseInt(args[0].replace(/^element\((\d+)\)$/, '$1')), args[1]],
       });
     }

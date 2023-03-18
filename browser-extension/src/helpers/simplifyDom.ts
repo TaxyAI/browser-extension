@@ -3,7 +3,7 @@
 import { callRPC } from './pageRPC';
 
 export async function getSimplifiedDom() {
-  const fullDom = await callRPC('get-annotated-dom');
+  const fullDom = await callRPC('getAnnotatedDOM');
 
   const dom = new DOMParser().parseFromString(fullDom, 'text/html');
 
