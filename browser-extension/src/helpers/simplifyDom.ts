@@ -50,11 +50,6 @@ function generateSimplifiedDom(
     element.hasAttribute('aria-label') || element.hasAttribute('name');
   const includeNode = interactive || hasLabel;
 
-  console.log('element', element.tagName, includeNode, interactive, hasLabel);
-  if (element.hasAttribute('data-name')) {
-    console.log('data-name', element.getAttribute('data-name'));
-  }
-
   if (!includeNode && children.length === 0) return null;
   if (!includeNode && children.length === 1) return children[0];
 

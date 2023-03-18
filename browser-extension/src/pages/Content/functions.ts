@@ -1,5 +1,5 @@
 export function click({ x, y }: { x: number; y: number }) {
-  const clickEvent = new MouseEvent('click', {
+  const mousedownEvent = new MouseEvent('mousedown', {
     view: window,
     bubbles: true,
     cancelable: true,
@@ -7,7 +7,15 @@ export function click({ x, y }: { x: number; y: number }) {
     screenY: y,
   });
 
-  const mousedownEvent = new MouseEvent('mousedown', {
+  const mouseUpEvent = new MouseEvent('mouseup', {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+    screenX: x,
+    screenY: y,
+  });
+
+  const clickEvent = new MouseEvent('click', {
     view: window,
     bubbles: true,
     cancelable: true,
@@ -18,6 +26,7 @@ export function click({ x, y }: { x: number; y: number }) {
   const el: any = document.elementFromPoint(x, y);
 
   el.dispatchEvent(mousedownEvent);
+  el.dispatchEvent(mouseUpEvent);
   el.dispatchEvent(clickEvent);
 }
 
@@ -65,5 +74,5 @@ export function clickAndEdit(
   setTimeout(() => {
     // Edit the input value
     simulateFocusedInputEdit(newValue);
-  }, 100);
+  }, 1000);
 }

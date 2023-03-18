@@ -1,5 +1,21 @@
 import { Configuration, OpenAIApi } from 'openai';
 
+const systemMessage = `
+You are a browser automation assistant.
+
+You can use the following tools:
+
+1. click(elementId: number): clicks on an element
+2. setValue(elementId: number, value: string): sets the value of an element
+
+You should show your work in the following format:
+
+Thought 1: I think I should...
+Action 1: click(...) or setValue(...)
+
+Only perform one action per block
+`;
+
 export async function performQuery(
   instructions: string,
   simplifiedDOM: string
@@ -13,12 +29,11 @@ export async function performQuery(
 
   try {
     const completion = await openai.createChatCompletion({
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
-          content:
-            'You are a tool to help users automate actions in their browser.',
+          content: systemMessage,
         },
         { role: 'user', content: prompt },
       ],
@@ -33,13 +48,13 @@ export async function performQuery(
 }
 
 export function formatPrompt(instructions: string, simplifiedDOM: string) {
-  return `Here is a simplified version of the DOM of a webpage, with many non-interactive elements removed:
+  return `You are on a page with the following simplified DOM structure:
   
 \`\`\`
 ${simplifiedDOM}
 \`\`\`
 
-Write a javascript function to do the following, interacting only with the elements we provide:
+The user requests the following task:
 
 ${instructions}`;
 }

@@ -25,11 +25,17 @@ import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { mapHTML } from '../helpers/mapHTML';
 import { performQuery } from '../helpers/performQuery';
 import ReactSyntaxHighlighter from 'react-syntax-highlighter';
+import extractActions from '../helpers/extractActions';
+import { callRPC } from '../helpers/pageRPC';
+import { MOST_RECENT_QUERY, useSyncStorage } from '../state';
 
 const enc = encoding_for_model('gpt-3.5-turbo');
 
 const TextToJS = () => {
-  const [instructionsContent, setInstructionsContent] = React.useState('');
+  const [instructionsContent, setInstructionsContent] = useSyncStorage(
+    MOST_RECENT_QUERY,
+    ''
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [loading, setLoading] = React.useState(false);
 
@@ -68,7 +74,15 @@ const TextToJS = () => {
       try {
         // Generate code from instructions
         const output = await performQuery(instructions, mappedHTML);
-        setCode(output);
+        const actions = extractActions(output);
+        setCode(
+          output + '\n\n' + 'Extracted Actions:\n' + JSON.stringify(actions)
+        );
+        for (const action of actions) {
+          callRPC(action['type'], action['args'] ?? []);
+          // sleep 1 second
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
       } catch (e: any) {
         toast({
           title: 'Error',
@@ -81,7 +95,7 @@ const TextToJS = () => {
         setLoading(false);
       }
     },
-    []
+    [toast]
   );
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

@@ -1,14 +1,14 @@
 import getAnnotatedDOM, { clickElement, setValue } from './getAnnotatedDOM';
 
-const methods = {
+export const methods = {
   'get-annotated-dom': getAnnotatedDOM,
   'click-element': clickElement,
   'set-value': setValue,
 } as const;
 
-type Methods = typeof methods;
+export type Methods = typeof methods;
 type MethodName = keyof Methods;
-type Payload<T extends MethodName> = Parameters<Methods[T]>[0];
+type Payload<T extends MethodName> = Parameters<Methods[T]>;
 type MethodRT<T extends MethodName> = ReturnType<Methods[T]>;
 
 // Call this function from the content script
@@ -29,7 +29,7 @@ export const callRPC = async <T extends MethodName>(
   console.log('sending message', type, payload, activeTab.id);
   const response: MethodRT<T> = await chrome.tabs.sendMessage(activeTab.id, {
     type,
-    payload,
+    payload: payload || [],
   });
   console.log('got response', response);
 
@@ -45,11 +45,11 @@ export const watchForRPCRequests = () => {
   window.rpc = methods;
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log('got message', message, sender);
+    console.log('got message!', message.type, message.payload);
     const type = message.type;
     if (isKnownMethodName(type)) {
       // console.log('got message', type, message.payload);
-      const resp = methods[type](message.payload);
+      const resp = methods[type](...message.payload);
       if (resp instanceof Promise) {
         resp.then(sendResponse);
         return true;
