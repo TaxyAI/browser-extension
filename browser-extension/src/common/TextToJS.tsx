@@ -19,7 +19,6 @@ import { ChatIcon, CopyIcon } from '@chakra-ui/icons';
 import prettier from 'prettier/standalone';
 import parserHTML from 'prettier/parser-html';
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import { encoding_for_model } from '@dqbd/tiktoken';
 import { useAsync } from 'react-use';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { mapHTML } from '../helpers/mapHTML';
@@ -27,8 +26,7 @@ import { performQuery } from '../helpers/performQuery';
 import extractActions from '../helpers/extractActions';
 import { callRPC } from '../helpers/pageRPC';
 import { MOST_RECENT_QUERY, useSyncStorage } from '../state';
-
-const enc = encoding_for_model('gpt-3.5-turbo');
+import { countTokens } from '../helpers/countTokens';
 
 const TextToJS = () => {
   const [instructionsContent, setInstructionsContent] = useSyncStorage(
@@ -40,25 +38,17 @@ const TextToJS = () => {
 
   const toast = useToast();
 
-  const simplifiedHTML = useAsync(getSimplifiedDom, []);
+  const simplifiedHTML = useAsync(getSimplifiedDom, []).value || '';
   const mappedHTML = useMemo(() => {
-    if (!simplifiedHTML.value) return '';
-    return mapHTML(simplifiedHTML.value);
+    if (!simplifiedHTML) return '';
+    return mapHTML(simplifiedHTML);
   }, [simplifiedHTML]);
 
-  const simplifiedHTMLNumTokens = useMemo(
-    () => enc.encode(simplifiedHTML.value ?? '').length,
-    [simplifiedHTML]
-  );
   const prettySimplifiedHTML = useMemo(
-    () => <PrettyHTML html={simplifiedHTML.value ?? ''} />,
+    () => <PrettyHTML html={simplifiedHTML} />,
     [simplifiedHTML]
   );
 
-  const mappedHTMLNumTokens = useMemo(
-    () => enc.encode(mappedHTML).length,
-    [mappedHTML]
-  );
   const prettyMappedHTML = useMemo(() => {
     if (!mappedHTML) return '';
     return <PrettyHTML html={mappedHTML} />;
@@ -101,7 +91,7 @@ const TextToJS = () => {
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onSubmitInstructions(instructionsContent, simplifiedHTML?.value ?? '');
+      onSubmitInstructions(instructionsContent, mappedHTML);
     }
   };
 
@@ -119,11 +109,9 @@ const TextToJS = () => {
       />
       <Button
         leftIcon={loading ? <Spinner /> : <ChatIcon />}
-        onClick={() =>
-          onSubmitInstructions(instructionsContent, simplifiedHTML.value ?? '')
-        }
+        onClick={() => onSubmitInstructions(instructionsContent, mappedHTML)}
         colorScheme="blue"
-        disabled={loading || !instructionsContent || !simplifiedHTML.value}
+        disabled={loading || !instructionsContent || !mappedHTML}
         mb={4}
       >
         Submit Instructions
@@ -173,24 +161,30 @@ const TextToJS = () => {
                   Mapped HTML
                 </Box>
                 <CopyIcon
-                  onClick={(event) => {
+                  onClick={async (event) => {
                     event.preventDefault();
                     if (mappedHTML) {
-                      navigator.clipboard.writeText(mappedHTML);
-                      toast({
-                        title: 'Copied to clipboard',
-                        status: 'success',
-                        duration: 3000,
-                        isClosable: true,
-                      });
+                      try {
+                        await navigator.clipboard.writeText(mappedHTML);
+                        toast({
+                          title: 'Copied to clipboard',
+                          status: 'success',
+                          duration: 3000,
+                          isClosable: true,
+                        });
+                      } catch (e: any) {
+                        toast({
+                          title: 'Error',
+                          description: e.message,
+                          status: 'error',
+                          duration: 5000,
+                          isClosable: true,
+                        });
+                      }
                     }
                   }}
                 />
-                {mappedHTMLNumTokens > 0 && (
-                  <Text as="span" fontSize="sm" color="gray.500">
-                    {mappedHTMLNumTokens} tokens
-                  </Text>
-                )}
+                <TokenCount html={mappedHTML} />
               </HStack>
               <AccordionIcon />
             </AccordionButton>
@@ -210,24 +204,30 @@ const TextToJS = () => {
                   Simplified HTML
                 </Box>
                 <CopyIcon
-                  onClick={(event) => {
+                  onClick={async (event) => {
                     event.preventDefault();
-                    if (simplifiedHTML.value) {
-                      navigator.clipboard.writeText(simplifiedHTML.value);
-                      toast({
-                        title: 'Copied to clipboard',
-                        status: 'success',
-                        duration: 3000,
-                        isClosable: true,
-                      });
+                    if (simplifiedHTML) {
+                      try {
+                        await navigator.clipboard.writeText(simplifiedHTML);
+                        toast({
+                          title: 'Copied to clipboard',
+                          status: 'success',
+                          duration: 3000,
+                          isClosable: true,
+                        });
+                      } catch (e: any) {
+                        toast({
+                          title: 'Error',
+                          description: e.message,
+                          status: 'error',
+                          duration: 5000,
+                          isClosable: true,
+                        });
+                      }
                     }
                   }}
                 />
-                {simplifiedHTMLNumTokens > 0 && (
-                  <Text as="span" fontSize="sm" color="gray.500">
-                    {simplifiedHTMLNumTokens} tokens
-                  </Text>
-                )}
+                <TokenCount html={simplifiedHTML} />
               </HStack>
               <AccordionIcon />
             </AccordionButton>
@@ -245,16 +245,30 @@ const TextToJS = () => {
   );
 };
 
-const PrettyHTML = ({ html }: { html: string }) => {
-  const formattedHTML = prettier.format(html, {
+const formatHTML = (html: string) =>
+  prettier.format(html, {
     parser: 'html',
     plugins: [parserHTML],
     htmlWhitespaceSensitivity: 'ignore',
   });
+
+const PrettyHTML = ({ html }: { html: string }) => {
   return (
     <SyntaxHighlighter language="htmlbars" customStyle={{ fontSize: 12 }}>
-      {formattedHTML}
+      {formatHTML(html)}
     </SyntaxHighlighter>
+  );
+};
+
+const TokenCount = ({ html }: { html: string }) => {
+  const numTokens = useAsync(() => countTokens(html), [html]).value || null;
+
+  return (
+    <>
+      <Text as="span" fontSize="sm" color="gray.500">
+        {numTokens ? numTokens > 0 && numTokens + ' tokens' : 'Counting...'}
+      </Text>
+    </>
   );
 };
 
