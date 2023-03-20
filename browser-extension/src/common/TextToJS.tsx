@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import {
   Box,
-  Text,
   Heading,
   Button,
   Spinner,
@@ -26,7 +25,7 @@ import { performQuery } from '../helpers/performQuery';
 import extractActions from '../helpers/extractActions';
 import { callRPC } from '../helpers/pageRPC';
 import { MOST_RECENT_QUERY, useSyncStorage } from '../state';
-import { countTokens } from '../helpers/countTokens';
+import TokenCount from './TokenCount';
 
 const TextToJS = () => {
   const [instructionsContent, setInstructionsContent] = useSyncStorage(
@@ -258,27 +257,6 @@ const PrettyHTML = ({ html }: { html: string }) => {
     <SyntaxHighlighter language="htmlbars" customStyle={{ fontSize: 12 }}>
       {formatHTML(html)}
     </SyntaxHighlighter>
-  );
-};
-
-const TokenCount = ({ html }: { html: string }) => {
-  const numTokens = useAsync(() => countTokens(html), [html]).value || null;
-
-  let displayedCount = null;
-  if (!html) {
-    displayedCount = 'Waiting for HTML';
-  } else if (numTokens === null) {
-    displayedCount = 'Counting...';
-  } else {
-    displayedCount = numTokens + ' tokens';
-  }
-
-  return (
-    <>
-      <Text as="span" fontSize="sm" color="gray.500">
-        {displayedCount}
-      </Text>
-    </>
   );
 };
 
