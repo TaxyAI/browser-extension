@@ -16,7 +16,7 @@ export async function getSimplifiedDom() {
     interactiveElements
   ) as HTMLElement;
 
-  return simplifiedDom.outerHTML;
+  return simplifiedDom;
 }
 
 function truthyFilter<T>(value: T | null | undefined): value is T {

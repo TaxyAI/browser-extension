@@ -21,7 +21,7 @@ import parserHTML from 'prettier/parser-html';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { useAsync } from 'react-use';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
-import { mapHTML } from '../helpers/mapHTML';
+import { tagsSelfClose } from '../helpers/shrinkHTML/tagsSelfClose';
 import { performQuery } from '../helpers/performQuery';
 import extractActions from '../helpers/extractActions';
 import { callRPC } from '../helpers/pageRPC';
@@ -38,10 +38,11 @@ const TextToJS = () => {
 
   const toast = useToast();
 
-  const simplifiedHTML = useAsync(getSimplifiedDom, []).value || '';
+  const simplifiedHTML =
+    useAsync(async () => (await getSimplifiedDom()).outerHTML, []).value ?? '';
   const mappedHTML = useMemo(() => {
     if (!simplifiedHTML) return '';
-    return mapHTML(simplifiedHTML);
+    return tagsSelfClose(simplifiedHTML);
   }, [simplifiedHTML]);
 
   const prettySimplifiedHTML = useMemo(
