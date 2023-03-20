@@ -1,11 +1,11 @@
 {
-  "name": "llm-browser-tools",
+  "name": "llm-web-agent",
   "version": "0.0.1",
-  "description": "Answer questions based on the content of the current page",
+  "description": "Web agent to do your bidding online",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/llm-lol/llm-browser-tooling.git"
+    "url": "https://github.com/llm-lol/web-agent.git"
   },
   "scripts": {
     "build": "node utils/build.js",
