@@ -40,7 +40,10 @@ const TextToJS = () => {
 
   const toast = useToast();
 
-  const simplifiedHTML = useAsync(getSimplifiedDom, []);
+  const simplifiedHTML = useAsync(
+    async () => (await getSimplifiedDom()).outerHTML,
+    []
+  );
   const mappedHTML = useMemo(() => {
     if (!simplifiedHTML.value) return '';
     return mapHTML(simplifiedHTML.value);
