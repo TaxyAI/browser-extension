@@ -1,4 +1,4 @@
-export const mapHTML = (html: string) => {
+export const tagsSelfClose = (html: string) => {
   // Regular expression to match empty elements
   const re = /<([a-z]+)([^<]*?)><\/\1>/gi;
 

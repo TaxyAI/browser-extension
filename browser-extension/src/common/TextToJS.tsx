@@ -22,7 +22,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { encoding_for_model } from '@dqbd/tiktoken';
 import { useAsync } from 'react-use';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
-import { mapHTML } from '../helpers/mapHTML';
+import { tagsSelfClose } from '../helpers/shrinkHTML/tagsSelfClose';
 import { performQuery } from '../helpers/performQuery';
 import extractActions from '../helpers/extractActions';
 import { callRPC } from '../helpers/pageRPC';
@@ -46,7 +46,7 @@ const TextToJS = () => {
   );
   const mappedHTML = useMemo(() => {
     if (!simplifiedHTML.value) return '';
-    return mapHTML(simplifiedHTML.value);
+    return tagsSelfClose(simplifiedHTML.value);
   }, [simplifiedHTML]);
 
   const simplifiedHTMLNumTokens = useMemo(
