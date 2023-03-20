@@ -266,7 +266,7 @@ const TokenCount = ({ html }: { html: string }) => {
 
   let displayedCount = null;
   if (!html) {
-    displayedCount = 'No HTML';
+    displayedCount = 'Waiting for HTML';
   } else if (numTokens === null) {
     displayedCount = 'Counting...';
   } else {
