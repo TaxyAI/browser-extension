@@ -264,10 +264,19 @@ const PrettyHTML = ({ html }: { html: string }) => {
 const TokenCount = ({ html }: { html: string }) => {
   const numTokens = useAsync(() => countTokens(html), [html]).value || null;
 
+  let displayedCount = null;
+  if (!html) {
+    displayedCount = 'No HTML';
+  } else if (numTokens === null) {
+    displayedCount = 'Counting...';
+  } else {
+    displayedCount = numTokens + ' tokens';
+  }
+
   return (
     <>
       <Text as="span" fontSize="sm" color="gray.500">
-        {numTokens ? numTokens > 0 && numTokens + ' tokens' : 'Counting...'}
+        {displayedCount}
       </Text>
     </>
   );
