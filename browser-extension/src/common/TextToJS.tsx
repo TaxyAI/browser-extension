@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Box,
   Heading,
@@ -28,10 +28,15 @@ import { MOST_RECENT_QUERY, useSyncStorage } from '../state';
 import TokenCount from './TokenCount';
 
 const TextToJS = () => {
-  const [instructionsContent, setInstructionsContent] = useSyncStorage(
+  const [mostRecentQuery, setMostRecentQuery] = useSyncStorage(
     MOST_RECENT_QUERY,
     ''
   );
+  const [instructionsContent, setInstructionsContent] =
+    React.useState(mostRecentQuery);
+  useEffect(() => {
+    setInstructionsContent(mostRecentQuery);
+  }, [mostRecentQuery]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [loading, setLoading] = React.useState(false);
 
@@ -60,6 +65,7 @@ const TextToJS = () => {
     async (instructions: string | null, mappedHTML: string) => {
       if (!instructions) return;
       setLoading(true);
+      setMostRecentQuery(instructions);
 
       try {
         // Generate code from instructions
