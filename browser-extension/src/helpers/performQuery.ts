@@ -42,7 +42,7 @@ export async function performQuery(
         },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 1000,
+      max_tokens: 500,
       temperature: 0,
     });
     console.log('completion', completion);
