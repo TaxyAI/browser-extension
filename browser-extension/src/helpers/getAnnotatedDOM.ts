@@ -91,7 +91,7 @@ export function clickElement(id: number) {
 
 export function setValue(id: number, value: string) {
   const element = currentElements[id];
-  if (element && 'value' in element) {
+  if (element) {
     clickAndEdit(elementCenter(element), value);
   }
 }
