@@ -55,6 +55,87 @@ export function click({ x, y }: { x: number; y: number }) {
 // @ts-ignore
 window.click = (x, y) => click({ x, y });
 
+// @ts-ignore
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// @ts-ignore
+async function simulateTyping(element, text, delay = 10) {
+  if (!element) {
+    console.error('No element provided');
+    return;
+  }
+
+  if (
+    !['INPUT', 'TEXTAREA'].includes(element.tagName) &&
+    !(
+      element.getAttribute('role') === 'textbox' &&
+      element.getAttribute('contenteditable')
+    )
+  ) {
+    console.error(
+      'Element must be an input, textarea, or div with role of textbox and contenteditable attribute'
+    );
+    return;
+  }
+
+  element.focus();
+
+  // Clear the existing text content
+  if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+    element.value = '';
+  } else if (element.getAttribute('contenteditable')) {
+    element.textContent = '';
+  }
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const charCode = char.charCodeAt(0);
+    const keydownEvent = new KeyboardEvent('keydown', {
+      key: char,
+      charCode: charCode,
+      keyCode: charCode,
+      which: charCode,
+      bubbles: true,
+    });
+    const keypressEvent = new KeyboardEvent('keypress', {
+      key: char,
+      charCode: charCode,
+      keyCode: charCode,
+      which: charCode,
+      bubbles: true,
+    });
+    const inputEvent = new InputEvent('input', { data: char, bubbles: true });
+
+    element.dispatchEvent(keydownEvent);
+    element.dispatchEvent(keypressEvent);
+
+    if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+      element.value += char;
+    } else if (element.getAttribute('contenteditable')) {
+      const selection = window.getSelection();
+      if (selection) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(document.createTextNode(char));
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      } else {
+        console.log('No selection found');
+      }
+    }
+
+    element.dispatchEvent(inputEvent);
+
+    // Wait for the specified delay before typing the next character
+    await sleep(delay);
+  }
+
+  element.blur();
+}
+
 function simulateFocusedInputEdit(newValue: string) {
   // Get the currently focused input element
   var inputElement = document.activeElement;
@@ -65,26 +146,7 @@ function simulateFocusedInputEdit(newValue: string) {
     return;
   }
 
-  if (
-    inputElement.tagName.toLowerCase() === 'input' ||
-    inputElement.tagName.toLowerCase() === 'textarea'
-  ) {
-    // @ts-ignore
-    inputElement.value = newValue;
-  } else if (inputElement.getAttribute('contenteditable')) {
-    inputElement.textContent = newValue;
-  } else {
-    // Send a keyboard event for each character in the new value
-    for (var i = 0; i < newValue.length; i++) {
-      var key = newValue[i];
-      var keyPressEvent = new KeyboardEvent('keypress', {
-        key,
-        bubbles: true,
-        cancelable: true,
-      });
-      inputElement.dispatchEvent(keyPressEvent);
-    }
-  }
+  simulateTyping(inputElement, newValue);
 
   // Trigger the input event to simulate an update
   var inputEvent = new Event('input', {
@@ -116,3 +178,6 @@ export function clickAndEdit(
     simulateFocusedInputEdit(newValue);
   }, 1000);
 }
+
+// @ts-ignore
+window.clickAndEdit = (x, y, newValue) => clickAndEdit({ x, y }, newValue);
