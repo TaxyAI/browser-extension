@@ -47,27 +47,10 @@ export async function performQuery(
     });
     console.log('completion', completion);
 
-    // focusMainPage();
-
     return completion.data.choices[0].message?.content?.trim() || '';
   } catch (error: any) {
     throw new Error(error.response.data.error.message);
   }
-}
-
-function focusMainPage() {
-  chrome.windows.getLastFocused({}, (window) => {
-    if (window.id) {
-      chrome.windows.update(window.id, { focused: true });
-    }
-  });
-  // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-  //   const currentTab = tabs[0];
-  //   console.log('currentTab', currentTab);
-  //   if (currentTab.id) {
-  //     chrome.windows.update(currentTab.id, { focused: true });
-  //   }
-  // });
 }
 
 export function formatPrompt(instructions: string, simplifiedDOM: string) {
