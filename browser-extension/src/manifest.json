@@ -10,7 +10,8 @@
     "history",
     "storage",
     "clipboardRead",
-    "clipboardWrite"
+    "clipboardWrite",
+    "debugger"
   ],
   "action": {
     "default_popup": "popup.html",
