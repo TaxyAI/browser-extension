@@ -1,10 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "_LLM Browser Tools",
+  "name": "_Web Agent",
   "description": "A chrome extension to help you execute arbitrary javascript on any website based on natural text commands",
   "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },
-  "permissions": ["tabs", "activeTab", "history", "storage"],
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "history",
+    "storage",
+    "clipboardRead",
+    "clipboardWrite"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icon-34.png"

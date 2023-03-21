@@ -1,5 +1,1 @@
-chrome.devtools.panels.create(
-  'LLM Browser Tooling',
-  'icon-34.png',
-  'panel.html'
-);
+chrome.devtools.panels.create('Web Agent', 'icon-34.png', 'panel.html');
