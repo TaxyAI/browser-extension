@@ -23,9 +23,9 @@ import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { tagsSelfClose } from '../helpers/shrinkHTML/tagsSelfClose';
 import { performQuery } from '../helpers/performQuery';
 import extractActions from '../helpers/extractActions';
-import { callRPC } from '../helpers/pageRPC';
 import { MOST_RECENT_QUERY, useSyncStorage } from '../state';
 import TokenCount from './TokenCount';
+import { callDOMAction } from '../helpers/domActions';
 
 const TextToJS = () => {
   const [mostRecentQuery, setMostRecentQuery] = useSyncStorage(
@@ -75,8 +75,8 @@ const TextToJS = () => {
           output + '\n\n' + 'Extracted Actions:\n' + JSON.stringify(actions)
         );
         for (const action of actions) {
-          callRPC(action['type'], action['args'] ?? []);
-          // sleep 1 second
+          callDOMAction(action['type'], action['args']);
+          // sleep 2 seconds
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       } catch (e: any) {
@@ -91,7 +91,7 @@ const TextToJS = () => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast, setMostRecentQuery]
   );
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

@@ -1,13 +1,13 @@
-import { Methods } from './pageRPC';
+import { DOMActionPayload } from './domActions';
 
 type Action =
   | {
       type: 'clickElement';
-      args: Parameters<Methods['clickElement']>;
+      args: DOMActionPayload<'clickElement'>;
     }
   | {
       type: 'setValue';
-      args: Parameters<Methods['setValue']>;
+      args: DOMActionPayload<'setValue'>;
     };
 
 export default function extractActions(text: string): Action[] {
@@ -29,12 +29,15 @@ export default function extractActions(text: string): Action[] {
     if (action === 'click') {
       actions.push({
         type: 'clickElement',
-        args: [parseInt(args[0].replace(/^element\((\d+)\)$/, '$1'))],
+        args: { id: parseInt(args[0].replace(/^element\((\d+)\)$/, '$1')) },
       });
     } else if (action === 'setValue') {
       actions.push({
         type: 'setValue',
-        args: [parseInt(args[0].replace(/^element\((\d+)\)$/, '$1')), args[1]],
+        args: {
+          id: parseInt(args[0].replace(/^element\((\d+)\)$/, '$1')),
+          text: args[1],
+        },
       });
     }
     // actions.push([action, args]);

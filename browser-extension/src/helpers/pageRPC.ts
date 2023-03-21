@@ -1,19 +1,20 @@
-import getAnnotatedDOM, { clickElement, setValue } from './getAnnotatedDOM';
+import getAnnotatedDOM, {
+  getElementCenterCoordinates,
+} from './getAnnotatedDOM';
 
-export const methods = {
+export const rpcMethods = {
   getAnnotatedDOM,
-  clickElement,
-  setValue,
+  getElementCenterCoordinates,
 } as const;
 
-export type Methods = typeof methods;
-type MethodName = keyof Methods;
-type Payload<T extends MethodName> = Parameters<Methods[T]>;
-type MethodRT<T extends MethodName> = ReturnType<Methods[T]>;
+export type RPCMethods = typeof rpcMethods;
+type MethodName = keyof RPCMethods;
+type Payload<T extends MethodName> = Parameters<RPCMethods[T]>;
+type MethodRT<T extends MethodName> = ReturnType<RPCMethods[T]>;
 
 // Call this function from the content script
 export const callRPC = async <T extends MethodName>(
-  type: keyof typeof methods,
+  type: keyof typeof rpcMethods,
   payload?: Payload<T>
 ): Promise<MethodRT<T>> => {
   let queryOptions = { active: true, currentWindow: true };
@@ -37,21 +38,20 @@ export const callRPC = async <T extends MethodName>(
 };
 
 const isKnownMethodName = (type: string): type is MethodName => {
-  return type in methods;
+  return type in rpcMethods;
 };
 
 // This function should run in the content script
 export const watchForRPCRequests = () => {
   // @ts-ignore
-  window.rpc = methods;
+  window.rpc = rpcMethods;
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log('got message!', message.type, message.payload);
     const type = message.type;
     if (isKnownMethodName(type)) {
-      // console.log('got message', type, message.payload);
       // @ts-ignore
-      const resp = methods[type](...message.payload);
+      const resp = rpcMethods[type](...message.payload);
       if (resp instanceof Promise) {
         resp.then(sendResponse);
         return true;

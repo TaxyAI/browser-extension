@@ -1,5 +1,3 @@
-import { click, clickAndEdit } from '../pages/Content/functions';
-
 function isInteractive(
   element: HTMLElement,
   style: CSSStyleDeclaration
@@ -70,28 +68,15 @@ function traverseDOM(node: Node, pageElements: HTMLElement[]) {
 export default function getAnnotatedDOM() {
   currentElements = [];
   const result = traverseDOM(document.documentElement, currentElements);
+  // @ts-ignore
   return result.clonedDOM.outerHTML;
 }
 
-const elementCenter = (element: HTMLElement) => {
+export function getElementCenterCoordinates(id: number) {
+  const element = currentElements[id];
   const rect = element.getBoundingClientRect();
   return {
     x: rect.left + rect.width / 2,
     y: rect.top + rect.height / 2,
   };
-};
-
-export function clickElement(id: number) {
-  const element = currentElements[id];
-  console.log('clicking element', element);
-  if (element) {
-    click(elementCenter(element));
-  }
-}
-
-export function setValue(id: number, value: string) {
-  const element = currentElements[id];
-  if (element) {
-    clickAndEdit(elementCenter(element), value);
-  }
 }
