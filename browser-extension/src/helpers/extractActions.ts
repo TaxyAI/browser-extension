@@ -11,7 +11,7 @@ type Action =
     };
 
 export default function extractActions(text: string): Action[] {
-  const actionRegex = /^Action \d+:\s*(\w+)\(([^)]*)\)/gm;
+  const actionRegex = /^Action \d+:\s*(\w+)\(([\s\S]*?)(?=\):END_ACTION)/gm;
   const actions: Action[] = [];
 
   let match;

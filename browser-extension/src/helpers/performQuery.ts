@@ -12,7 +12,7 @@ You can use the following tools:
 You should show your work in the following format:
 
 Thought 1: I think I should...
-Action 1: click(...) or setValue(...)
+Action 1: click(...):END_ACTION or setValue(...):END_ACTION
 
 Only perform one action per block
 `;
@@ -42,7 +42,7 @@ export async function performQuery(
         },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 500,
+      max_tokens: 1000,
       temperature: 0,
     });
     console.log('completion', completion);
