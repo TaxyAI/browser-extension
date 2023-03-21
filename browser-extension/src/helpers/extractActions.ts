@@ -11,7 +11,8 @@ type Action =
     };
 
 export default function extractActions(text: string): Action[] {
-  const actionRegex = /^Action \d+:\s*(\w+)\(([\s\S]*?)(?=\):END_ACTION)/gm;
+  const actionRegex =
+    /^Action \d+:\s*([\w\s\S]*?)\(([\s\S]*?)(?=\):END_ACTION)/gm;
   const actions: Action[] = [];
 
   let match;
@@ -21,7 +22,9 @@ export default function extractActions(text: string): Action[] {
     const args = match[2]
       .split(',')
       .map((arg) => arg.trim())
-      .map((arg) => arg.replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1'));
+      .map((arg) => arg.replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1'))
+      // unescape newlines
+      .map((arg) => arg.replace(/\\n/g, '\n'));
 
     if (action === 'click') {
       actions.push({
