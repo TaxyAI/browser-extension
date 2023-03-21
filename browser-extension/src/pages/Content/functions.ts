@@ -4,9 +4,19 @@ export function click({ x, y }: { x: number; y: number }) {
 
   // If an element is found, create and dispatch mouse events
   if (targetElement) {
-    const mouseEvents = ['mousedown', 'mouseup', 'click'];
+    const mouseEvents = [
+      'touchstart',
+      'touchend',
+      'touchmove',
+      'pointerdown',
+      'pointerup',
+      'pointermove',
+      'mousedown',
+      'mouseup',
+      'click',
+    ];
 
-    mouseEvents.forEach((eventType) => {
+    mouseEvents.forEach((eventType, index) => {
       const event = new MouseEvent(eventType, {
         bubbles: true,
         cancelable: true,
@@ -15,7 +25,7 @@ export function click({ x, y }: { x: number; y: number }) {
         clientY: y,
       });
 
-      targetElement.dispatchEvent(event);
+      setTimeout(() => targetElement.dispatchEvent(event), index * 10);
     });
 
     // Custom focus event for input and textarea elements
@@ -32,7 +42,10 @@ export function click({ x, y }: { x: number; y: number }) {
     }
 
     // If the target element is an input or textarea, trigger the custom focus event
-    if (['INPUT', 'TEXTAREA'].includes(targetElement.tagName)) {
+    if (
+      ['INPUT', 'TEXTAREA'].includes(targetElement.tagName) ||
+      targetElement.getAttribute('contenteditable')
+    ) {
       focusElement(targetElement);
     }
   } else {
@@ -47,17 +60,31 @@ function simulateFocusedInputEdit(newValue: string) {
   var inputElement = document.activeElement;
 
   // Check if the input element is of the correct type
-  if (
-    !inputElement ||
-    (inputElement.tagName.toLowerCase() !== 'input' &&
-      inputElement.tagName.toLowerCase() !== 'textarea')
-  ) {
+  if (!inputElement) {
     console.error('No text input or textarea is currently focused');
     return;
   }
 
-  // @ts-ignore
-  inputElement.value = newValue;
+  if (
+    inputElement.tagName.toLowerCase() === 'input' ||
+    inputElement.tagName.toLowerCase() === 'textarea'
+  ) {
+    // @ts-ignore
+    inputElement.value = newValue;
+  } else if (inputElement.getAttribute('contenteditable')) {
+    inputElement.textContent = newValue;
+  } else {
+    // Send a keyboard event for each character in the new value
+    for (var i = 0; i < newValue.length; i++) {
+      var key = newValue[i];
+      var keyPressEvent = new KeyboardEvent('keypress', {
+        key,
+        bubbles: true,
+        cancelable: true,
+      });
+      inputElement.dispatchEvent(keyPressEvent);
+    }
+  }
 
   // Trigger the input event to simulate an update
   var inputEvent = new Event('input', {
@@ -78,9 +105,10 @@ export function clickAndEdit(
   coords: { x: number; y: number },
   newValue: string
 ) {
-  // Click the element
-
+  // Click the element 3 times, with a 10ms delay between each click
   click(coords);
+  setTimeout(() => click(coords), 10);
+  setTimeout(() => click(coords), 20);
 
   // Wait for the element to be focused
   setTimeout(() => {
