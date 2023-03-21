@@ -45,11 +45,11 @@ function generateSimplifiedDom(
   if (element.tagName === 'BODY')
     children = children.filter((c) => c.nodeType !== Node.TEXT_NODE);
 
-  const interactive = element.getAttribute('data-interactive') === 'true';
-  const hasLabel =
-    element.hasAttribute('aria-label') ||
-    element.hasAttribute('name') ||
+  const interactive =
+    element.getAttribute('data-interactive') === 'true' ||
     element.hasAttribute('role');
+  const hasLabel =
+    element.hasAttribute('aria-label') || element.hasAttribute('name');
   const includeNode = interactive || hasLabel;
 
   if (!includeNode && children.length === 0) return null;
@@ -75,8 +75,7 @@ function generateSimplifiedDom(
     }
   }
   if (interactive) {
-    const index = interactiveElements.length;
-    interactiveElements.push(element);
+    interactiveElements.push(element as HTMLElement);
     container.setAttribute('id', element.getAttribute('data-id') as string);
   }
 
