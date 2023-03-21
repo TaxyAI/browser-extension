@@ -47,11 +47,15 @@ function generateSimplifiedDom(
 
   const interactive = element.getAttribute('data-interactive') === 'true';
   const hasLabel =
-    element.hasAttribute('aria-label') || element.hasAttribute('name');
+    element.hasAttribute('aria-label') ||
+    element.hasAttribute('name') ||
+    element.hasAttribute('role');
   const includeNode = interactive || hasLabel;
 
   if (!includeNode && children.length === 0) return null;
-  if (!includeNode && children.length === 1) return children[0];
+  if (!includeNode && children.length === 1) {
+    return children[0];
+  }
 
   const container = document.createElement(element.tagName);
 
@@ -62,6 +66,7 @@ function generateSimplifiedDom(
     'type',
     'placeholder',
     'value',
+    'role',
   ];
 
   for (const attr of allowedAttributes) {
@@ -69,7 +74,6 @@ function generateSimplifiedDom(
       container.setAttribute(attr, element.getAttribute(attr) as string);
     }
   }
-
   if (interactive) {
     const index = interactiveElements.length;
     interactiveElements.push(element);
