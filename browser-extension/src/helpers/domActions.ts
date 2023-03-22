@@ -40,7 +40,7 @@ async function scrollIntoView(tabId: number, objectId: string) {
     'Runtime.callFunctionOn',
     { objectId, functionDeclaration: scrollScriptString }
   );
-  await sleep(500);
+  await sleep(1000);
 }
 
 async function getCenterCoordinates(tabId: number, objectId: string) {
