@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "puppeteer": "^19.7.5",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "tsx": "^3.12.5",
     "typescript": "^5.0.2"
   }

@@ -26,6 +26,7 @@ import extractActions from '../helpers/extractActions';
 import { MOST_RECENT_QUERY, useSyncStorage } from '../state';
 import TokenCount from './TokenCount';
 import { callDOMAction } from '../helpers/domActions';
+import templatize from '../helpers/shrinkHTML/templatize';
 
 const TextToJS = () => {
   const [mostRecentQuery, setMostRecentQuery] = useSyncStorage(
@@ -44,9 +45,9 @@ const TextToJS = () => {
 
   const simplifiedHTML =
     useAsync(async () => (await getSimplifiedDom()).outerHTML, []).value ?? '';
-  const mappedHTML = useMemo(() => {
+  const templatizedHTML = useMemo(() => {
     if (!simplifiedHTML) return '';
-    return tagsSelfClose(simplifiedHTML);
+    return templatize(simplifiedHTML);
   }, [simplifiedHTML]);
 
   const prettySimplifiedHTML = useMemo(
@@ -54,50 +55,42 @@ const TextToJS = () => {
     [simplifiedHTML]
   );
 
-  const prettyMappedHTML = useMemo(() => {
-    if (!mappedHTML) return '';
-    return <PrettyHTML html={mappedHTML} />;
-  }, [mappedHTML]);
-
   const [code, setCode] = React.useState('');
 
-  const onSubmitInstructions = useCallback(
-    async (instructions: string | null, mappedHTML: string) => {
-      if (!instructions) return;
-      setLoading(true);
-      setMostRecentQuery(instructions);
+  const onSubmitInstructions = useCallback(async () => {
+    if (!instructionsContent) return;
+    setLoading(true);
+    setMostRecentQuery(instructionsContent);
 
-      try {
-        // Generate code from instructions
-        const output = await performQuery(instructions, mappedHTML);
-        const actions = extractActions(output);
-        setCode(
-          output + '\n\n' + 'Extracted Actions:\n' + JSON.stringify(actions)
-        );
-        for (const action of actions) {
-          callDOMAction(action['type'], action['args']);
-          // sleep 2 seconds
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-        }
-      } catch (e: any) {
-        toast({
-          title: 'Error',
-          description: e.message,
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      } finally {
-        setLoading(false);
-      }
-    },
-    [toast, setMostRecentQuery]
-  );
+    try {
+      // Generate code from instructions
+      const output = await performQuery(instructionsContent, templatizedHTML);
+      const actions = extractActions(output);
+      setCode(
+        output + '\n\n' + 'Extracted Actions:\n' + JSON.stringify(actions)
+      );
+      // for (const action of actions) {
+      //   callDOMAction(action['type'], action['args']);
+      //   // sleep 2 seconds
+      //   await new Promise((resolve) => setTimeout(resolve, 2000));
+      // }
+    } catch (e: any) {
+      toast({
+        title: 'Error',
+        description: e.message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast, setMostRecentQuery, instructionsContent, templatizedHTML]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onSubmitInstructions(instructionsContent, mappedHTML);
+      onSubmitInstructions();
     }
   };
 
@@ -115,9 +108,9 @@ const TextToJS = () => {
       />
       <Button
         leftIcon={loading ? <Spinner /> : <ChatIcon />}
-        onClick={() => onSubmitInstructions(instructionsContent, mappedHTML)}
+        onClick={onSubmitInstructions}
         colorScheme="blue"
-        disabled={loading || !instructionsContent || !mappedHTML}
+        disabled={loading || !instructionsContent || !templatizedHTML}
         mb={4}
       >
         Submit Instructions
@@ -158,20 +151,20 @@ const TextToJS = () => {
         </VStack>
       )}
       <Accordion allowToggle>
-        {/* Mapped HTML */}
+        {/* Templatized HTML */}
         <AccordionItem>
           <Heading as="h2" size="md">
             <AccordionButton>
               <HStack flex="1">
                 <Box as="span" textAlign="left" mr="4">
-                  Mapped HTML
+                  Templatized HTML
                 </Box>
                 <CopyIcon
                   onClick={async (event) => {
                     event.preventDefault();
-                    if (mappedHTML) {
+                    if (templatizedHTML) {
                       try {
-                        await navigator.clipboard.writeText(mappedHTML);
+                        await navigator.clipboard.writeText(templatizedHTML);
                         toast({
                           title: 'Copied to clipboard',
                           status: 'success',
@@ -190,14 +183,16 @@ const TextToJS = () => {
                     }
                   }}
                 />
-                <TokenCount html={mappedHTML} />
+                <TokenCount html={templatizedHTML} />
               </HStack>
               <AccordionIcon />
             </AccordionButton>
           </Heading>
           <AccordionPanel pb={4} maxH="lg" overflow="scroll">
-            {prettyMappedHTML && (
-              <Box css={{ p: { marginBottom: '1em' } }}>{prettyMappedHTML}</Box>
+            {templatizedHTML && (
+              <Box fontSize="sm">
+                <pre>{templatizedHTML}</pre>
+              </Box>
             )}
           </AccordionPanel>
         </AccordionItem>
@@ -251,12 +246,17 @@ const TextToJS = () => {
   );
 };
 
-const formatHTML = (html: string) =>
-  prettier.format(html, {
-    parser: 'html',
-    plugins: [parserHTML],
-    htmlWhitespaceSensitivity: 'ignore',
-  });
+const formatHTML = (html: string) => {
+  try {
+    return prettier.format(html, {
+      parser: 'html',
+      plugins: [parserHTML],
+      htmlWhitespaceSensitivity: 'ignore',
+    });
+  } catch (e: any) {
+    return html;
+  }
+};
 
 const PrettyHTML = ({ html }: { html: string }) => {
   return (
