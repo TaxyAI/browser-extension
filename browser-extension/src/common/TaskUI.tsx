@@ -27,7 +27,7 @@ import TokenCount from './TokenCount';
 import { callDOMAction } from '../helpers/domActions';
 import templatize from '../helpers/shrinkHTML/templatize';
 
-const TextToJS = () => {
+const TaskUI = () => {
   const [mostRecentQuery, setMostRecentQuery] = useSyncStorage(
     MOST_RECENT_QUERY,
     ''
@@ -265,4 +265,4 @@ const PrettyHTML = ({ html }: { html: string }) => {
   );
 };
 
-export default TextToJS;
+export default TaskUI;
