@@ -20,7 +20,6 @@ import parserHTML from 'prettier/parser-html';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { useAsync } from 'react-use';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
-import { tagsSelfClose } from '../helpers/shrinkHTML/tagsSelfClose';
 import { performQuery } from '../helpers/performQuery';
 import extractActions from '../helpers/extractActions';
 import { MOST_RECENT_QUERY, useSyncStorage } from '../state';
