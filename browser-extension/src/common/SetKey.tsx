@@ -11,9 +11,9 @@ const SetKey = () => {
   return (
     <Stack spacing={4}>
       <Text>
-        To use LLM Browser Tooling, you'll need to enter your OpenAI API key.
-        This is saved in Chrome storage, not on our servers. Once you have an
-        OpenAI account you can create a key{' '}
+        To use WebAgent, you'll need to enter your OpenAI API key. This is saved
+        in Chrome storage, not on our servers. Once you have an OpenAI account
+        you can create a key{' '}
         <Link href="https://beta.openai.com/account/api-keys" color="teal.500">
           here
         </Link>
