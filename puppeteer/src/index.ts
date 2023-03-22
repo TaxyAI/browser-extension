@@ -20,12 +20,6 @@ await page.setUserAgent(
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"
 );
 
-// Import the cookies
-const cookiesString = await fs.readFile("cookies.json", "utf-8");
-const cookies = JSON.parse(cookiesString);
-await page.setCookie(...cookies);
-console.log("cookies imported");
-
 await page.goto("https://unminify.com/");
 
 // Wait for the user to log in

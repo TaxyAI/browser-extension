@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 
 export const OPENAI_KEY = 'openai-key';
 export const SELECTED_OPENAI_MODEL = 'selected-openai-model';
-export const MOST_RECENT_QUERY = 'most-recent-query';
+export const CURRENT_TASK_INSTRUCTIONS = 'current-task-instructions';
 
 type StoredTypes = {
   [OPENAI_KEY]: string;
   [SELECTED_OPENAI_MODEL]: string;
-  [MOST_RECENT_QUERY]: string;
+  [CURRENT_TASK_INSTRUCTIONS]: string;
 };
 
 export function useSyncStorage<T extends keyof StoredTypes>(
@@ -26,10 +26,7 @@ export function useSyncStorage<T extends keyof StoredTypes>(
 
   const setItem = useCallback(
     (value: Value) => {
-      console.log('value', value);
-      chrome.storage.sync.set({ [key]: value }, () => {
-        setState(value);
-      });
+      chrome.storage.sync.set({ [key]: value });
     },
     [key]
   );

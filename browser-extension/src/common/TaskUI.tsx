@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Box,
   Heading,
@@ -21,24 +27,21 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { useAsync } from 'react-use';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { performQuery } from '../helpers/performQuery';
-import extractActions from '../helpers/extractActions';
-import { MOST_RECENT_QUERY, useSyncStorage } from '../state';
+import extractAction, { ExtractedAction } from '../helpers/extractAction';
+import { CURRENT_TASK_INSTRUCTIONS, useSyncStorage } from '../state';
 import TokenCount from './TokenCount';
 import { callDOMAction } from '../helpers/domActions';
 import templatize from '../helpers/shrinkHTML/templatize';
 
 const TaskUI = () => {
-  const [mostRecentQuery, setMostRecentQuery] = useSyncStorage(
-    MOST_RECENT_QUERY,
+  const [taskInstructions, setTaskInstructions] = useSyncStorage(
+    CURRENT_TASK_INSTRUCTIONS,
     ''
   );
-  const [instructionsContent, setInstructionsContent] =
-    React.useState(mostRecentQuery);
-  useEffect(() => {
-    setInstructionsContent(mostRecentQuery);
-  }, [mostRecentQuery]);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [loading, setLoading] = React.useState(false);
+
+  const [previousActions, setPreviousActions] = useState<ExtractedAction[]>([]);
+
+  const [taskInProgress, setTaskInProgress] = React.useState(false);
 
   const toast = useToast();
 
@@ -54,22 +57,37 @@ const TaskUI = () => {
     [simplifiedHTML]
   );
 
-  const [code, setCode] = React.useState('');
+  const [stepOutput, setStepOutput] = React.useState('');
 
-  const onSubmitInstructions = useCallback(async () => {
-    if (!instructionsContent) return;
-    setLoading(true);
-    setMostRecentQuery(instructionsContent);
+  const onBeginTask = useCallback(async () => {
+    if (!taskInstructions) return;
+    setTaskInProgress(true);
+    setPreviousActions([]);
 
     try {
-      // Generate code from instructions
-      const output = await performQuery(instructionsContent, templatizedHTML);
-      const actions = extractActions(output);
-      setCode(
-        output + '\n\n' + 'Extracted Actions:\n' + JSON.stringify(actions)
-      );
-      for (const action of actions) {
-        callDOMAction(action['type'], action['args']);
+      while (true) {
+        const currentDom = templatize((await getSimplifiedDom()).outerHTML);
+
+        const response = await performQuery(
+          taskInstructions,
+          previousActions,
+          currentDom
+        );
+
+        const action = extractAction(response);
+
+        setStepOutput(
+          `${response} \n\nExtracted Action: \n ${JSON.stringify(action)}`
+        );
+
+        if (action === null || action.executableAction.type === 'finish') {
+          break;
+        }
+        callDOMAction(
+          action?.executableAction.type,
+          action?.executableAction.args
+        );
+        setPreviousActions((prev) => [...prev, action]);
         // sleep 2 seconds
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
@@ -82,14 +100,14 @@ const TaskUI = () => {
         isClosable: true,
       });
     } finally {
-      setLoading(false);
+      setTaskInProgress(false);
     }
-  }, [toast, setMostRecentQuery, instructionsContent, templatizedHTML]);
+  }, [toast, taskInstructions, previousActions]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onSubmitInstructions();
+      onBeginTask();
     }
   };
 
@@ -99,33 +117,32 @@ const TaskUI = () => {
         autoFocus
         noOfLines={2}
         placeholder="Your question"
-        value={instructionsContent || ''}
-        onChange={(e) => setInstructionsContent(e.target.value)}
+        value={taskInstructions || ''}
+        onChange={(e) => setTaskInstructions(e.target.value)}
         mb={2}
-        ref={textareaRef}
         onKeyDown={onKeyDown}
       />
       <Button
-        leftIcon={loading ? <Spinner /> : <ChatIcon />}
-        onClick={onSubmitInstructions}
+        leftIcon={taskInProgress ? <Spinner /> : <ChatIcon />}
+        onClick={onBeginTask}
         colorScheme="blue"
-        disabled={loading || !instructionsContent || !templatizedHTML}
+        disabled={taskInProgress || !taskInstructions || !templatizedHTML}
         mb={4}
       >
         Submit Instructions
       </Button>
-      {/* Generated Code */}
-      {code && (
+      {/* LLM Response */}
+      {stepOutput && (
         <VStack>
           <HStack w="full">
             <Box as="span" textAlign="left" mr="4">
-              Generated Code
+              LLM Response
             </Box>
             <CopyIcon
               onClick={(event) => {
                 event.preventDefault();
-                if (code) {
-                  navigator.clipboard.writeText(code);
+                if (stepOutput) {
+                  navigator.clipboard.writeText(stepOutput);
                   toast({
                     title: 'Copied to clipboard',
                     status: 'success',
@@ -144,7 +161,7 @@ const TaskUI = () => {
               wrapLines
               wrapLongLines
             >
-              {code}
+              {stepOutput}
             </SyntaxHighlighter>
           </Box>
         </VStack>

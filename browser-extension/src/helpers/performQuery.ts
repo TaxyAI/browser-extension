@@ -1,5 +1,6 @@
 import { Configuration, OpenAIApi } from 'openai';
 import { getValueFromStorage, SELECTED_OPENAI_MODEL } from '../state';
+import { ExtractedAction } from './extractAction';
 
 const systemMessage = `
 You are a browser automation assistant.
@@ -7,25 +8,26 @@ You are a browser automation assistant.
 You can use the following tools:
 
 1. click(elementId: number): clicks on an element
-2. setValue(elementId: number, value: string): focuses on and sets the value of a text element
+2. setValue(elementId: number, value: string): focuses on and sets the value of an input element
+3. finish(): indicates the task is finished, or that you are unable to complete the task
 
-You should show your work in the following format:
+You will be be given a task to perform and the current state of the DOM. You will also be given previous thoughts and actions that you have taken. 
 
-Thought 1: I think I should...
-Action 1: click(...):END_ACTION or setValue(...):END_ACTION
+You should respond with an action to take in the following format:
 
-Only perform one action per block
-`;
+<Thought>I should...</Thought>
+<Action>click(number) or setValue(number, string)</Action>`;
 
 export async function performQuery(
-  instructions: string,
+  taskInstructions: string,
+  previousActions: ExtractedAction[],
   simplifiedDOM: string
 ) {
   const model = (await getValueFromStorage(
     SELECTED_OPENAI_MODEL,
     'gpt-3.5-turbo'
   )) as string;
-  const prompt = formatPrompt(instructions, simplifiedDOM);
+  const prompt = formatPrompt(taskInstructions, previousActions, simplifiedDOM);
   const openai = new OpenAIApi(
     new Configuration({
       apiKey: (await chrome.storage.sync.get('openai-key'))['openai-key'],
@@ -44,23 +46,38 @@ export async function performQuery(
       ],
       max_tokens: 500,
       temperature: 0,
+      stop: ['</Action>'],
     });
-    console.log('completion', completion);
 
-    return completion.data.choices[0].message?.content?.trim() || '';
+    return completion.data.choices[0].message?.content?.trim() + '</Action>';
   } catch (error: any) {
     throw new Error(error.response.data.error.message);
   }
 }
 
-export function formatPrompt(instructions: string, simplifiedDOM: string) {
-  return `You are on a page with the following simplified DOM structure:
-  
-\`\`\`
-${simplifiedDOM}
-\`\`\`
+export function formatPrompt(
+  taskInstructions: string,
+  previousActions: ExtractedAction[],
+  pageContents: string
+) {
+  let previousActionsString = '';
 
-The user requests the following task:
+  if (previousActions.length > 0) {
+    const serializedActions = previousActions
+      .map(
+        (action) =>
+          `<Thought>${action.thought}</Thought>\n<Action>${action.action}</Action>`
+      )
+      .join('\n\n');
+    previousActionsString = `You have already taken the following actions: \n${serializedActions}\n\n`;
+  }
 
-${instructions}`;
+  return `The user requests the following task:
+
+${taskInstructions}
+
+${previousActionsString}
+
+Current page contents:
+${pageContents}`;
 }

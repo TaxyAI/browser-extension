@@ -120,14 +120,14 @@ async function blurFocusedElement(tabId: number) {
 
 async function setValue(
   tabId: number,
-  payload: { id: number; text: string }
+  payload: { id: number; value: string }
 ): Promise<void> {
   const objectId = await getObjectId(tabId, payload.id);
   await scrollIntoView(tabId, objectId);
   const { x, y } = await getCenterCoordinates(tabId, objectId);
 
   await selectAllText(tabId, x, y);
-  await typeText(tabId, payload.text);
+  await typeText(tabId, payload.value);
   // blur the element
   await blurFocusedElement(tabId);
 }
