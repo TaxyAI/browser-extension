@@ -14,7 +14,7 @@ async function clickAtPosition(
   y: number,
   activeTabId: number
 ): Promise<void> {
-  return new Promise((resolve) => {
+  await new Promise((resolve) => {
     chrome.debugger.sendCommand(
       { tabId: activeTabId },
       'Input.dispatchMouseEvent',
@@ -45,21 +45,9 @@ async function clickAtPosition(
   });
 }
 
-async function clickElement(payload: { id: number }) {
-  chrome.tabs.query(
-    { active: true, currentWindow: true },
-    async (tabs: chrome.tabs.Tab[]) => {
-      const activeTabId = tabs[0].id;
-      if (!activeTabId) return;
-
-      const { x, y } = await getCenterCoordinates(payload.id);
-
-      chrome.debugger.attach({ tabId: activeTabId }, '1.2', async () => {
-        await clickAtPosition(x, y, activeTabId);
-        chrome.debugger.detach({ tabId: activeTabId });
-      });
-    }
-  );
+async function clickElement(payload: { id: number }, activeTabId: number) {
+  const { x, y } = await getCenterCoordinates(payload.id);
+  await clickAtPosition(x, y, activeTabId);
 }
 
 async function typeText(text: string, activeTabId: number): Promise<void> {
@@ -137,8 +125,11 @@ export const callDOMAction = async <T extends ActionName>(
 
   chrome.debugger.attach({ tabId: activeTab.id }, '1.2', async () => {
     console.log('attached to debugger');
-    // @ts-ignore
-    await domActions[type](payload, activeTab.id);
-    chrome.debugger.detach({ tabId: activeTab.id });
+    try {
+      // @ts-ignore
+      await domActions[type](payload, activeTab.id);
+    } finally {
+      chrome.debugger.detach({ tabId: activeTab.id });
+    }
   });
 };
