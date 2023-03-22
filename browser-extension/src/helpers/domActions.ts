@@ -1,13 +1,10 @@
 import { callRPC } from './pageRPC';
+import { sleep } from './sleep';
 
 async function getCenterCoordinates(
   id: number
 ): Promise<{ x: number; y: number }> {
   return callRPC('getElementCenterCoordinates', [id]);
-}
-
-async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Wrap the chrome.debugger.sendCommand in a Promise
