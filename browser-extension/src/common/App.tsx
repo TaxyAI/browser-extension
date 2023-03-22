@@ -1,11 +1,4 @@
-import {
-  Box,
-  Text,
-  ChakraProvider,
-  Heading,
-  HStack,
-  Button,
-} from '@chakra-ui/react';
+import { Box, Text, ChakraProvider, Heading, HStack } from '@chakra-ui/react';
 import React from 'react';
 import { useSyncStorage } from '../state';
 import ModelDropdown from './ModelDropdown';
@@ -14,20 +7,6 @@ import TextToJS from './TextToJS';
 
 const App = ({ showIntro }: { showIntro?: boolean }) => {
   const [openAIKey] = useSyncStorage('openai-key');
-
-  const [numClicks, setNumClicks] = React.useState(0);
-
-  const sendTestMessage = () => {
-    // get active tab
-    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-      // send message to content script
-      await chrome.tabs.sendMessage(tabs[0].id!, {
-        type: 'TESTING',
-        payload: { something: 'hi' },
-      });
-      setNumClicks(numClicks + 1);
-    });
-  };
 
   return (
     <ChakraProvider>
@@ -48,10 +27,6 @@ const App = ({ showIntro }: { showIntro?: boolean }) => {
           </Text>
         )}
         {openAIKey ? <TextToJS /> : <SetKey />}
-      </Box>
-      <Box>
-        <Button onClick={sendTestMessage}>Test</Button>
-        <Text>{numClicks}</Text>
       </Box>
     </ChakraProvider>
   );
