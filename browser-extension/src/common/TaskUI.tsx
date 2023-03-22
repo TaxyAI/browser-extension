@@ -68,6 +68,7 @@ const TaskUI = () => {
       while (true) {
         const currentDom = templatize((await getSimplifiedDom()).outerHTML);
 
+        console.log('running once');
         const response = await performQuery(
           taskInstructions,
           previousActions,
@@ -88,8 +89,8 @@ const TaskUI = () => {
           action?.executableAction.args
         );
         setPreviousActions((prev) => [...prev, action]);
-        // sleep 2 seconds
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // sleep 5 seconds
+        await new Promise((resolve) => setTimeout(resolve, 5000));
       }
     } catch (e: any) {
       toast({
@@ -134,6 +135,22 @@ const TaskUI = () => {
       {/* LLM Response */}
       {stepOutput && (
         <VStack>
+          {previousActions.length > 0 && (
+            <>
+              <Box as="span" textAlign="left" mr="4">
+                Previous Actions
+              </Box>
+              <SyntaxHighlighter
+                language="javascript"
+                customStyle={{ fontSize: 12 }}
+                wrapLines
+                wrapLongLines
+              >
+                {JSON.stringify(previousActions, null, 2)}
+              </SyntaxHighlighter>
+            </>
+          )}
+
           <HStack w="full">
             <Box as="span" textAlign="left" mr="4">
               LLM Response
