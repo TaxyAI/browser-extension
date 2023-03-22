@@ -123,13 +123,27 @@ export const callDOMAction = async <T extends ActionName>(
   if (!activeTab?.id) throw new Error('No active tab found');
   console.log('taking DOM action', type, payload, activeTab.id);
 
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
   chrome.debugger.attach({ tabId: activeTab.id }, '1.2', async () => {
-    console.log('attached to debugger');
-    try {
-      // @ts-ignore
-      await domActions[type](payload, activeTab.id);
-    } finally {
-      chrome.debugger.detach({ tabId: activeTab.id });
+    if (chrome.runtime.lastError) {
+      console.error(
+        'Failed to attach debugger:',
+        chrome.runtime.lastError.message
+      );
+      throw new Error(
+        `Failed to attach debugger: ${chrome.runtime.lastError.message}`
+      );
+    } else {
+      console.log('attached to debugger');
+      (async () => {
+        try {
+          // @ts-ignore
+          await domActions[type](payload, activeTab.id);
+        } finally {
+          chrome.debugger.detach({ tabId: activeTab.id });
+        }
+      })();
     }
   });
 };
