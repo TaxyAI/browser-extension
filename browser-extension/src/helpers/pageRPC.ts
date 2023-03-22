@@ -33,6 +33,7 @@ export const callRPC = async <T extends MethodName>(
     payload: payload || [],
   });
   console.log('got response', response);
+  console.log(Date.now() % 100000);
 
   return response;
 };
@@ -46,18 +47,25 @@ export const watchForRPCRequests = () => {
   // @ts-ignore
   window.rpc = rpcMethods;
 
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log('got message!', message.type, message.payload);
-    const type = message.type;
-    if (isKnownMethodName(type)) {
-      // @ts-ignore
-      const resp = rpcMethods[type](...message.payload);
-      if (resp instanceof Promise) {
-        resp.then(sendResponse);
-        return true;
-      } else {
-        sendResponse(resp);
+  chrome.runtime.onMessage.addListener(
+    async (message, sender, sendResponse) => {
+      console.log('got message!', message.type, message.payload);
+      const type = message.type;
+      if (isKnownMethodName(type)) {
+        // @ts-ignore
+        const resp = rpcMethods[type](...message.payload);
+        if (resp instanceof Promise) {
+          resp.then((resolvedResp) => {
+            console.log('resolved response', resolvedResp);
+            console.log(Date.now() % 100000);
+            sendResponse(resolvedResp);
+          });
+
+          return true;
+        } else {
+          sendResponse(resp);
+        }
       }
     }
-  });
+  );
 };

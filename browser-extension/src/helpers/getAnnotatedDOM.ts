@@ -1,3 +1,5 @@
+import { sleep } from './sleep';
+
 function isInteractive(
   element: HTMLElement,
   style: CSSStyleDeclaration
@@ -72,9 +74,14 @@ export default function getAnnotatedDOM() {
   return result.clonedDOM.outerHTML;
 }
 
-export function getElementCenterCoordinates(id: number) {
+export async function getElementCenterCoordinates(id: number) {
   const element = currentElements[id];
+  // scroll element into view over 0.5 seconds
+  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  await sleep(5000);
+
   const rect = element.getBoundingClientRect();
+  console.log('rect', rect);
   return {
     x: rect.left + rect.width / 2,
     y: rect.top + rect.height / 2,

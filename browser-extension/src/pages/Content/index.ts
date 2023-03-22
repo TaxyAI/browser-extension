@@ -10,3 +10,13 @@ window.logMouseCoordinates = function logMouseCoordinates() {
 };
 
 watchForRPCRequests();
+
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+  console.log('got message in generic receiver', message.type, message.payload);
+  if (message.type === 'TESTING') {
+    setTimeout(() => {
+      sendResponse('hello from content script');
+    }, 5000);
+    return true;
+  }
+});
