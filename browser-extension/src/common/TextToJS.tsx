@@ -69,11 +69,11 @@ const TextToJS = () => {
       setCode(
         output + '\n\n' + 'Extracted Actions:\n' + JSON.stringify(actions)
       );
-      // for (const action of actions) {
-      //   callDOMAction(action['type'], action['args']);
-      //   // sleep 2 seconds
-      //   await new Promise((resolve) => setTimeout(resolve, 2000));
-      // }
+      for (const action of actions) {
+        callDOMAction(action['type'], action['args']);
+        // sleep 2 seconds
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
     } catch (e: any) {
       toast({
         title: 'Error',
