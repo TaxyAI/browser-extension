@@ -21,13 +21,13 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { useAsync } from 'react-use';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { performQuery } from '../helpers/performQuery';
-import extractActions from '../helpers/extractActions';
+import extractActions frqwjom '../helpers/extractActions';
 import { MOST_RECENT_QUERY, useSyncStorage } from '../state';
 import TokenCount from './TokenCount';
 import { callDOMAction } from '../helpers/domActions';
 import templatize from '../helpers/shrinkHTML/templatize';
 
-const TextToJS = () => {
+const TaskUI = () => {
   const [mostRecentQuery, setMostRecentQuery] = useSyncStorage(
     MOST_RECENT_QUERY,
     ''
@@ -265,4 +265,4 @@ const PrettyHTML = ({ html }: { html: string }) => {
   );
 };
 
-export default TextToJS;
+export default TaskUI;

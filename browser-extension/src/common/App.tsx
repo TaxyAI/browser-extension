@@ -3,7 +3,7 @@ import React from 'react';
 import { useSyncStorage } from '../state';
 import ModelDropdown from './ModelDropdown';
 import SetKey from './SetKey';
-import TextToJS from './TextToJS';
+import TaskUI from './TaskUI';
 
 const App = ({ showIntro }: { showIntro?: boolean }) => {
   const [openAIKey] = useSyncStorage('openai-key');
@@ -26,7 +26,7 @@ const App = ({ showIntro }: { showIntro?: boolean }) => {
             or to add a new div to the page.
           </Text>
         )}
-        {openAIKey ? <TextToJS /> : <SetKey />}
+        {openAIKey ? <TaskUI /> : <SetKey />}
       </Box>
     </ChakraProvider>
   );
