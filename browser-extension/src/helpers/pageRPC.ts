@@ -1,10 +1,8 @@
-import getAnnotatedDOM, {
-  getElementCenterCoordinates,
-} from './getAnnotatedDOM';
+import getAnnotatedDOM, { getUniqueElementSelectorId } from './getAnnotatedDOM';
 
 export const rpcMethods = {
   getAnnotatedDOM,
-  getElementCenterCoordinates,
+  getUniqueElementSelectorId,
 } as const;
 
 export type RPCMethods = typeof rpcMethods;

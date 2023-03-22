@@ -1,4 +1,4 @@
-import { sleep } from './sleep';
+import { WEBAGENT_ELEMENT_SELECTOR } from '../constants';
 
 function isInteractive(
   element: HTMLElement,
@@ -74,16 +74,13 @@ export default function getAnnotatedDOM() {
   return result.clonedDOM.outerHTML;
 }
 
-export async function getElementCenterCoordinates(id: number) {
+// idempotent function to get a unique id for an element
+export function getUniqueElementSelectorId(id: number): string {
   const element = currentElements[id];
-  // scroll element into view over 0.5 seconds
-  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  await sleep(5000);
-
-  const rect = element.getBoundingClientRect();
-  console.log('rect', rect);
-  return {
-    x: rect.left + rect.width / 2,
-    y: rect.top + rect.height / 2,
-  };
+  // element may already have a unique id
+  let uniqueId = element.getAttribute(WEBAGENT_ELEMENT_SELECTOR);
+  if (uniqueId) return uniqueId;
+  uniqueId = Math.random().toString(36).substring(2, 10);
+  element.setAttribute(WEBAGENT_ELEMENT_SELECTOR, uniqueId);
+  return uniqueId;
 }

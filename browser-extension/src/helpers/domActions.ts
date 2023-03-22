@@ -1,47 +1,77 @@
+import { WEBAGENT_ELEMENT_SELECTOR } from '../constants';
 import { callRPC } from './pageRPC';
+import { scrollScriptString } from './runtimeFunctionStrings';
 import { sleep } from './sleep';
 
-async function getCenterCoordinates(
-  id: number
-): Promise<{ x: number; y: number }> {
-  return callRPC('getElementCenterCoordinates', [id]);
+async function getObjectId(tabId: number, originalId: number) {
+  const uniqueId = await callRPC('getUniqueElementSelectorId', [originalId]);
+  // get node id
+  const document = (await chrome.debugger.sendCommand(
+    { tabId },
+    'DOM.getDocument'
+  )) as any;
+  const { nodeId } = (await chrome.debugger.sendCommand(
+    { tabId },
+    'DOM.querySelector',
+    {
+      nodeId: document.root.nodeId,
+      selector: `[${WEBAGENT_ELEMENT_SELECTOR}="${uniqueId}"]`,
+    }
+  )) as any;
+  if (!nodeId) {
+    throw new Error('Could not find node');
+  }
+  // get object id
+  const result = (await chrome.debugger.sendCommand(
+    { tabId },
+    'DOM.resolveNode',
+    { nodeId }
+  )) as any;
+  const objectId = result.object.objectId;
+  if (!objectId) {
+    throw new Error('Could not find object');
+  }
+  return objectId;
 }
 
-// Wrap the chrome.debugger.sendCommand in a Promise
-function sendCommand(
-  tabId: number,
-  method: string,
-  params?: Object
-): Promise<any> {
-  console.log('Sending command', method, params, tabId);
-  return new Promise((resolve, reject) => {
-    chrome.debugger.sendCommand({ tabId }, method, params, (result) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(result || {});
-      }
-    });
-  });
+async function scrollIntoView(tabId: number, objectId: string) {
+  await chrome.debugger.sendCommand(
+    { tabId: tabId },
+    'Runtime.callFunctionOn',
+    { objectId, functionDeclaration: scrollScriptString }
+  );
+  await sleep(500);
+}
+
+async function getCenterCoordinates(tabId: number, objectId: string) {
+  const { model } = (await chrome.debugger.sendCommand(
+    { tabId: tabId },
+    'DOM.getBoxModel',
+    { objectId }
+  )) as any;
+  const [x1, y1, x2, y2, x3, y3, x4, y4] = model.border;
+  const centerX = (x1 + x3) / 2;
+  const centerY = (y1 + y3) / 2;
+  return { x: centerX, y: centerY };
 }
 
 const delayBetweenClicks = 200; // Set this value to control the delay between clicks
 const delayBetweenKeystrokes = 100; // Set this value to control typing speed
 
 async function clickAtPosition(
-  activeTabId: number,
+  tabId: number,
   x: number,
   y: number,
   clickCount: number = 1
 ): Promise<void> {
-  await sendCommand(activeTabId, 'Input.dispatchMouseEvent', {
+  await chrome.debugger.sendCommand({ tabId }, 'Input.dispatchMouseEvent', {
     type: 'mousePressed',
     x,
     y,
     button: 'left',
     clickCount,
   });
-  await sendCommand(activeTabId, 'Input.dispatchMouseEvent', {
+  await chrome.debugger.sendCommand({ tabId }, 'Input.dispatchMouseEvent', {
     type: 'mouseReleased',
     x,
     y,
@@ -51,23 +81,25 @@ async function clickAtPosition(
   await sleep(delayBetweenClicks);
 }
 
-async function clickElement(activeTabId: number, payload: { id: number }) {
-  const { x, y } = await getCenterCoordinates(payload.id);
-  await clickAtPosition(activeTabId, x, y);
+async function clickElement(tabId: number, payload: { id: number }) {
+  const objectId = await getObjectId(tabId, payload.id);
+  await scrollIntoView(tabId, objectId);
+  const { x, y } = await getCenterCoordinates(tabId, objectId);
+  await clickAtPosition(tabId, x, y);
 }
 
-async function selectAllText(activeTabId: number, x: number, y: number) {
-  await clickAtPosition(activeTabId, x, y, 3);
+async function selectAllText(tabId: number, x: number, y: number) {
+  await clickAtPosition(tabId, x, y, 3);
 }
 
-async function typeText(activeTabId: number, text: string): Promise<void> {
+async function typeText(tabId: number, text: string): Promise<void> {
   for (const char of text) {
-    await sendCommand(activeTabId, 'Input.dispatchKeyEvent', {
+    await chrome.debugger.sendCommand({ tabId }, 'Input.dispatchKeyEvent', {
       type: 'keyDown',
       text: char,
     });
     await sleep(delayBetweenKeystrokes / 2);
-    await sendCommand(activeTabId, 'Input.dispatchKeyEvent', {
+    await chrome.debugger.sendCommand({ tabId }, 'Input.dispatchKeyEvent', {
       type: 'keyUp',
       text: char,
     });
@@ -75,27 +107,29 @@ async function typeText(activeTabId: number, text: string): Promise<void> {
   }
 }
 
-async function blurFocusedElement(activeTabId: number) {
+async function blurFocusedElement(tabId: number) {
   const blurFocusedElementScript = `
       if (document.activeElement) {
         document.activeElement.blur();
       }
     `;
-  await sendCommand(activeTabId, 'Runtime.evaluate', {
+  await chrome.debugger.sendCommand({ tabId }, 'Runtime.evaluate', {
     expression: blurFocusedElementScript,
   });
 }
 
 async function setValue(
-  activeTabId: number,
+  tabId: number,
   payload: { id: number; text: string }
 ): Promise<void> {
-  const { x, y } = await getCenterCoordinates(payload.id);
+  const objectId = await getObjectId(tabId, payload.id);
+  await scrollIntoView(tabId, objectId);
+  const { x, y } = await getCenterCoordinates(tabId, objectId);
 
-  await selectAllText(activeTabId, x, y);
-  await typeText(activeTabId, payload.text);
+  await selectAllText(tabId, x, y);
+  await typeText(tabId, payload.text);
   // blur the element
-  await blurFocusedElement(activeTabId);
+  await blurFocusedElement(tabId);
 }
 
 export const domActions = {
@@ -123,12 +157,13 @@ export const callDOMAction = async <T extends ActionName>(
     activeTab = (await chrome.tabs.query(queryOptions))[0];
   }
 
-  if (!activeTab?.id) throw new Error('No active tab found');
-  console.log('taking DOM action', type, payload, activeTab.id);
+  const tabId = activeTab.id;
+  if (!tabId) throw new Error('No active tab found');
+  console.log('taking DOM action', type, payload);
 
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
-  chrome.debugger.attach({ tabId: activeTab.id }, '1.2', async () => {
+  chrome.debugger.attach({ tabId }, '1.2', async () => {
     if (chrome.runtime.lastError) {
       console.error(
         'Failed to attach debugger:',
@@ -139,12 +174,16 @@ export const callDOMAction = async <T extends ActionName>(
       );
     } else {
       console.log('attached to debugger');
+
+      await chrome.debugger.sendCommand({ tabId }, 'DOM.enable');
+      await chrome.debugger.sendCommand({ tabId }, 'Runtime.enable');
+
       (async () => {
         try {
           // @ts-ignore
-          await domActions[type](activeTab.id, payload);
+          await domActions[type](tabId, payload);
         } finally {
-          chrome.debugger.detach({ tabId: activeTab.id });
+          chrome.debugger.detach({ tabId });
         }
       })();
     }
