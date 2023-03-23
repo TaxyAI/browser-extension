@@ -43,7 +43,8 @@ export async function performQuery(
   );
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      console.log('prompt', prompt);
+      // Log object to collapse it in the console
+      console.log('prompt', { prompt });
       const completion = await openai.createChatCompletion({
         model: model,
         messages: [
