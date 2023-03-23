@@ -157,7 +157,7 @@ const TaskUI = () => {
       <Heading as="h3" size="md" mb="4">
         Page Context
       </Heading>
-      <Accordion allowToggle>
+      <Accordion allowToggle allowMultiple>
         {/* Templatized HTML */}
         <AccordionItem>
           <Heading as="h2" size="md">

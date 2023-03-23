@@ -28,11 +28,7 @@ type TaskHistoryItemProps = {
   entry: TaskHistoryEntry;
 };
 
-const CollapsibleComponent = (props: {
-  title: string;
-  text: string;
-  defaultCollapsed: boolean;
-}) => (
+const CollapsibleComponent = (props: { title: string; text: string }) => (
   <AccordionItem backgroundColor="white">
     <Heading as="h4" size="xs">
       <AccordionButton>
@@ -69,21 +65,12 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
         </AccordionButton>
       </Heading>
       <AccordionPanel backgroundColor="gray.100" p="2">
-        <Accordion allowToggle w="full" defaultIndex={1}>
-          <CollapsibleComponent
-            title="Prompt"
-            text={entry.prompt}
-            defaultCollapsed={true}
-          />
-          <CollapsibleComponent
-            title="Response"
-            text={entry.response}
-            defaultCollapsed={false}
-          />
+        <Accordion allowToggle allowMultiple w="full" defaultIndex={1}>
+          <CollapsibleComponent title="Prompt" text={entry.prompt} />
+          <CollapsibleComponent title="Response" text={entry.response} />
           <CollapsibleComponent
             title="Action"
             text={JSON.stringify(entry.action, null, 2)}
-            defaultCollapsed={true}
           />
         </Accordion>
       </AccordionPanel>
@@ -113,7 +100,7 @@ export default function TaskHistory({
         <Spacer />
         <CopyButton text={JSON.stringify(taskHistory, null, 2)} />
       </HStack>
-      <Accordion allowToggle w="full" pb="4">
+      <Accordion allowToggle allowMultiple w="full" pb="4">
         {taskHistory.map((entry, index) => (
           <TaskHistoryItem key={index} index={index} entry={entry} />
         ))}
