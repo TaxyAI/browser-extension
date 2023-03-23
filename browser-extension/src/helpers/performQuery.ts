@@ -22,7 +22,9 @@ This is an example of an action:
 export async function performQuery(
   taskInstructions: string,
   previousActions: ExtractedAction[],
-  simplifiedDOM: string
+  simplifiedDOM: string,
+  maxAttempts: number = 3,
+  notifyError?: (error: string) => void
 ) {
   const model = (await getValueFromStorage(
     SELECTED_OPENAI_MODEL,
@@ -39,33 +41,44 @@ export async function performQuery(
     'api key',
     (await chrome.storage.sync.get('openai-key'))['openai-key']
   );
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      console.log('prompt', prompt);
+      const completion = await openai.createChatCompletion({
+        model: model,
+        messages: [
+          {
+            role: 'system',
+            content: systemMessage,
+          },
+          { role: 'user', content: prompt },
+        ],
+        max_tokens: 500,
+        temperature: 0,
+        stop: ['</Action>'],
+      });
 
-  try {
-    console.log('prompt', prompt);
-    const completion = await openai.createChatCompletion({
-      model: model,
-      messages: [
-        {
-          role: 'system',
-          content: systemMessage,
-        },
-        { role: 'user', content: prompt },
-      ],
-      max_tokens: 500,
-      temperature: 0,
-      stop: ['</Action>'],
-    });
-
-    console.log('completion', completion.data.choices[0]);
-    return {
-      prompt,
-      response:
-        completion.data.choices[0].message?.content?.trim() + '</Action>',
-    };
-  } catch (error: any) {
-    console.log('error', error);
-    throw new Error(error.response.data.error.message);
+      console.log('completion', completion.data.choices[0]);
+      return {
+        prompt,
+        response:
+          completion.data.choices[0].message?.content?.trim() + '</Action>',
+      };
+    } catch (error: any) {
+      if (error.response.data.error.message.includes('server error')) {
+        // Problem with the OpenAI API, try again
+        if (notifyError) {
+          notifyError(error.response.data.error.message);
+        }
+      } else {
+        // Another error, give up
+        throw new Error(error.response.data.error.message);
+      }
+    }
   }
+  throw new Error(
+    `Failed to complete query after ${maxAttempts} attempts. Please try again later.`
+  );
 }
 
 export function formatPrompt(

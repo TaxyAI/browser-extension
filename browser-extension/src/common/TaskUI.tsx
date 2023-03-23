@@ -32,7 +32,7 @@ import { CURRENT_TASK_INSTRUCTIONS, useSyncStorage } from '../state';
 import TokenCount from './TokenCount';
 import { callDOMAction } from '../helpers/domActions';
 import templatize from '../helpers/shrinkHTML/templatize';
-import { truthyFilter } from '../helpers/utils';
+import { sleep, truthyFilter } from '../helpers/utils';
 import { JSONTree } from 'react-json-tree';
 import TaskHistory, { TaskHistoryEntry } from './TaskHistory';
 import CopyButton from './CopyButton';
@@ -52,6 +52,19 @@ const TaskUI = () => {
   const [taskInProgress, setTaskInProgress] = React.useState(false);
 
   const toast = useToast();
+
+  const toastError = useCallback(
+    (message: string) => {
+      toast({
+        title: 'Error',
+        description: message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    },
+    [toast]
+  );
 
   const simplifiedHTML =
     useAsync(async () => (await getSimplifiedDom()).outerHTML, []).value ?? '';
@@ -82,7 +95,9 @@ const TaskUI = () => {
         const { prompt, response } = await performQuery(
           taskInstructions,
           previousActions,
-          currentDom
+          currentDom,
+          3,
+          toastError
         );
 
         const action = extractAction(response);
@@ -100,17 +115,11 @@ const TaskUI = () => {
         if (taskHistoryRef.current.length > 10) {
           break;
         }
-        // sleep 5 seconds
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        // sleep 2 seconds
+        await sleep(2000);
       }
     } catch (e: any) {
-      toast({
-        title: 'Error',
-        description: e.message,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      toastError(e.message);
     } finally {
       setTaskInProgress(false);
     }
