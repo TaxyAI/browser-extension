@@ -10,6 +10,8 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
+  Spinner,
+  Spacer,
 } from '@chakra-ui/react';
 import React from 'react';
 import { ExtractedAction } from '../helpers/extractAction';
@@ -91,9 +93,13 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
 
 type TaskHistoryProps = {
   taskHistory: TaskHistoryEntry[];
+  loading: boolean;
 };
 
-export default function TaskHistory({ taskHistory }: TaskHistoryProps) {
+export default function TaskHistory({
+  taskHistory,
+  loading,
+}: TaskHistoryProps) {
   if (taskHistory.length === 0) return null;
 
   return (
@@ -102,6 +108,9 @@ export default function TaskHistory({ taskHistory }: TaskHistoryProps) {
         <Heading as="h3" size="md">
           Task History
         </Heading>
+        {/* Loading indicator */}
+        {loading && <Spinner color="teal.500" size="sm" />}
+        <Spacer />
         <CopyButton text={JSON.stringify(taskHistory, null, 2)} />
       </HStack>
       <Accordion allowToggle w="full" pb="4">

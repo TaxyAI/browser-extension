@@ -1,4 +1,4 @@
-import { WEBAGENT_ELEMENT_SELECTOR } from '../constants';
+import { WEBAGENT_ELEMENT_SELECTOR } from '../../constants';
 
 function isInteractive(
   element: HTMLElement,

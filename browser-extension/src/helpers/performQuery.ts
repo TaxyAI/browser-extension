@@ -9,14 +9,15 @@ You can use the following tools:
 
 1. click(elementId: number): clicks on an element
 2. setValue(elementId: number, value: string): focuses on and sets the value of an input element
-3. finish(): indicates the task is finished, or that you are unable to complete the task
+3. finish(): indicates the task is finished
+4. fail(): indicates that you are unable to complete the task
 
-You will be be given a task to perform and the current state of the DOM. You will also be given previous thoughts and actions that you have taken. You may retry a failed action up to one time. If after one retry you cannot complete the task, respond with the finish action.
+You will be be given a task to perform and the current state of the DOM. You will also be given previous actions that you have taken. You may retry a failed action up to one time.
 
-You should respond with an action to take in the following format:
+This is an example of an action:
 
-<Thought>I should...</Thought>
-<Action>click(number) or setValue(number, string)</Action>`;
+<Thought>I should click the add to cart button</Thought>
+<Action>click(223)</Action>`;
 
 export async function performQuery(
   taskInstructions: string,
@@ -34,7 +35,13 @@ export async function performQuery(
     })
   );
 
+  console.log(
+    'api key',
+    (await chrome.storage.sync.get('openai-key'))['openai-key']
+  );
+
   try {
+    console.log('prompt', prompt);
     const completion = await openai.createChatCompletion({
       model: model,
       messages: [
@@ -49,12 +56,14 @@ export async function performQuery(
       stop: ['</Action>'],
     });
 
+    console.log('completion', completion.data.choices[0]);
     return {
       prompt,
       response:
         completion.data.choices[0].message?.content?.trim() + '</Action>',
     };
   } catch (error: any) {
+    console.log('error', error);
     throw new Error(error.response.data.error.message);
   }
 }

@@ -1,8 +1,12 @@
-import getAnnotatedDOM, { getUniqueElementSelectorId } from './getAnnotatedDOM';
+import getAnnotatedDOM, {
+  getUniqueElementSelectorId,
+} from '../pages/Content/getAnnotatedDOM';
+import ripple from '../pages/Content/ripple';
 
 export const rpcMethods = {
   getAnnotatedDOM,
   getUniqueElementSelectorId,
+  ripple,
 } as const;
 
 export type RPCMethods = typeof rpcMethods;

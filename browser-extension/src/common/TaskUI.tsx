@@ -87,10 +87,10 @@ const TaskUI = () => {
 
         const action = extractAction(response);
 
+        setTaskHistory((prev) => [...prev, { prompt, response, action }]);
         if (action === null || action.executableAction.type === 'finish') {
           break;
         }
-        setTaskHistory((prev) => [...prev, { prompt, response, action }]);
 
         await callDOMAction(
           action?.executableAction.type,
@@ -141,9 +141,9 @@ const TaskUI = () => {
         disabled={taskInProgress || !taskInstructions || !templatizedHTML}
         mb={4}
       >
-        Begin Task
+        Execute Task
       </Button>
-      <TaskHistory taskHistory={taskHistory} />
+      <TaskHistory taskHistory={taskHistory} taskInProgress={taskInProgress} />
 
       <Heading as="h3" size="md" mb="4">
         Page Context

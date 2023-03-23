@@ -64,6 +64,7 @@ async function clickAtPosition(
   y: number,
   clickCount: number = 1
 ): Promise<void> {
+  callRPC('ripple', [x, y]);
   await chrome.debugger.sendCommand({ tabId }, 'Input.dispatchMouseEvent', {
     type: 'mousePressed',
     x,
