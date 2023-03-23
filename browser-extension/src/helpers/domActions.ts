@@ -180,15 +180,13 @@ export const callDOMAction = async <T extends ActionName>(
           await chrome.debugger.sendCommand({ tabId }, 'DOM.enable');
           await chrome.debugger.sendCommand({ tabId }, 'Runtime.enable');
 
-          (async () => {
-            try {
-              // @ts-ignore
-              await domActions[type](tabId, payload);
-              resolve();
-            } finally {
-              chrome.debugger.detach({ tabId });
-            }
-          })();
+          try {
+            // @ts-ignore
+            await domActions[type](tabId, payload);
+          } finally {
+            chrome.debugger.detach({ tabId });
+            resolve();
+          }
         }
       });
     } catch (e) {
