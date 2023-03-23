@@ -29,8 +29,6 @@ export const callRPC = async <T extends MethodName>(
     type,
     payload: payload || [],
   });
-  console.log('got response', response);
-  console.log(Date.now() % 100000);
 
   return response;
 };

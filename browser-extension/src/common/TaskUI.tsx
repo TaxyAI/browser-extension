@@ -34,12 +34,8 @@ import { callDOMAction } from '../helpers/domActions';
 import templatize from '../helpers/shrinkHTML/templatize';
 import { truthyFilter } from '../helpers/utils';
 import { JSONTree } from 'react-json-tree';
-
-type HistoryEntry = {
-  prompt: string;
-  response: string;
-  action: ExtractedAction | null;
-};
+import TaskHistory, { TaskHistoryEntry } from './TaskHistory';
+import CopyButton from './CopyButton';
 
 const TaskUI = () => {
   const [taskInstructions, setTaskInstructions] = useSyncStorage(
@@ -47,7 +43,7 @@ const TaskUI = () => {
     ''
   );
 
-  const [taskHistory, setTaskHistory] = useState<HistoryEntry[]>([]);
+  const [taskHistory, setTaskHistory] = useState<TaskHistoryEntry[]>([]);
   const taskHistoryRef = useRef(taskHistory);
   useEffect(() => {
     taskHistoryRef.current = taskHistory;
@@ -81,6 +77,8 @@ const TaskUI = () => {
         const previousActions = taskHistoryRef.current
           .map((entry) => entry.action)
           .filter(truthyFilter);
+
+        console.log('gonna run');
         const { prompt, response } = await performQuery(
           taskInstructions,
           previousActions,
@@ -130,7 +128,7 @@ const TaskUI = () => {
       <Textarea
         autoFocus
         noOfLines={2}
-        placeholder="Your question"
+        placeholder="Task instructions"
         value={taskInstructions || ''}
         onChange={(e) => setTaskInstructions(e.target.value)}
         mb={2}
@@ -143,68 +141,23 @@ const TaskUI = () => {
         disabled={taskInProgress || !taskInstructions || !templatizedHTML}
         mb={4}
       >
-        Submit Instructions
+        Begin Task
       </Button>
-      {taskHistory.length > 0 && (
-        <VStack>
-          <HStack w="full">
-            <Box as="span" textAlign="left" mr="4">
-              Task History
-            </Box>
-            <CopyIcon
-              onClick={(event) => {
-                event.preventDefault();
-                navigator.clipboard.writeText(
-                  JSON.stringify(taskHistory, null, 2)
-                );
-                toast({
-                  title: 'Copied to clipboard',
-                  status: 'success',
-                  duration: 3000,
-                  isClosable: true,
-                });
-              }}
-            />
-          </HStack>
-          <Box w="full" fontSize="sm">
-            <JSONTree data={taskHistory} />
-          </Box>
-        </VStack>
-      )}
+      <TaskHistory taskHistory={taskHistory} />
 
+      <Heading as="h3" size="md" mb="4">
+        Page Context
+      </Heading>
       <Accordion allowToggle>
         {/* Templatized HTML */}
         <AccordionItem>
           <Heading as="h2" size="md">
             <AccordionButton>
               <HStack flex="1">
-                <Box as="span" textAlign="left" mr="4">
+                <Box as="span" textAlign="left">
                   Templatized HTML
                 </Box>
-                <CopyIcon
-                  onClick={async (event) => {
-                    event.preventDefault();
-                    if (templatizedHTML) {
-                      try {
-                        await navigator.clipboard.writeText(templatizedHTML);
-                        toast({
-                          title: 'Copied to clipboard',
-                          status: 'success',
-                          duration: 3000,
-                          isClosable: true,
-                        });
-                      } catch (e: any) {
-                        toast({
-                          title: 'Error',
-                          description: e.message,
-                          status: 'error',
-                          duration: 5000,
-                          isClosable: true,
-                        });
-                      }
-                    }
-                  }}
-                />
+                <CopyButton text={templatizedHTML} />
                 <TokenCount html={templatizedHTML} />
               </HStack>
               <AccordionIcon />
@@ -223,33 +176,10 @@ const TaskUI = () => {
           <Heading as="h2" size="md">
             <AccordionButton>
               <HStack flex="1">
-                <Box as="span" textAlign="left" mr="4">
+                <Box as="span" textAlign="left">
                   Simplified HTML
                 </Box>
-                <CopyIcon
-                  onClick={async (event) => {
-                    event.preventDefault();
-                    if (simplifiedHTML) {
-                      try {
-                        await navigator.clipboard.writeText(simplifiedHTML);
-                        toast({
-                          title: 'Copied to clipboard',
-                          status: 'success',
-                          duration: 3000,
-                          isClosable: true,
-                        });
-                      } catch (e: any) {
-                        toast({
-                          title: 'Error',
-                          description: e.message,
-                          status: 'error',
-                          duration: 5000,
-                          isClosable: true,
-                        });
-                      }
-                    }
-                  }}
-                />
+                <CopyButton text={simplifiedHTML} />
                 <TokenCount html={simplifiedHTML} />
               </HStack>
               <AccordionIcon />

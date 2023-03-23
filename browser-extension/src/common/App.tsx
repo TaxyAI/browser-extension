@@ -12,7 +12,7 @@ const App = ({ showIntro }: { showIntro?: boolean }) => {
     <ChakraProvider>
       <Box p="8" fontSize="lg" w="full">
         <HStack mb={4} alignItems="center">
-          <Heading as="h1" size="lg" mb={4} flex={1}>
+          <Heading as="h1" size="lg" flex={1}>
             WebAgent
           </Heading>
           <Box flex={1}>
@@ -21,9 +21,9 @@ const App = ({ showIntro }: { showIntro?: boolean }) => {
         </HStack>
         {showIntro && (
           <Text fontSize="lg" mb="4">
-            WebAgent uses OpenAI's GPT-3 API to generate code from instructions
-            and executes it in your browser. Try telling it to click a button,
-            or to add a new div to the page.
+            WebAgent uses OpenAI's GPT-4 API to perform actions in your browser.
+            Try telling it to sign up for a newsletter, or to add an item to
+            your cart.
           </Text>
         )}
         {openAIKey ? <TaskUI /> : <SetKey />}
