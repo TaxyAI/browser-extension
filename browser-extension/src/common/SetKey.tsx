@@ -1,7 +1,7 @@
 import { CheckIcon } from '@chakra-ui/icons';
 import { Button, Input, Link, Stack, Text } from '@chakra-ui/react';
 import React from 'react';
-import { useSyncStorage } from '../state';
+import { useSyncStorage } from '../state/syncStorage';
 
 const SetKey = () => {
   const [openAIKey, setOpenAIKey] = useSyncStorage('openai-key');

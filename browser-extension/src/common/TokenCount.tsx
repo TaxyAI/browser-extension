@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text } from '@chakra-ui/react';
-import { SELECTED_OPENAI_MODEL, useSyncStorage } from '../state';
+import { SELECTED_OPENAI_MODEL, useSyncStorage } from '../state/syncStorage';
 import { countTokens } from '../helpers/countTokens';
 import { useAsync } from 'react-use';
 

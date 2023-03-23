@@ -1,5 +1,8 @@
 import { Configuration, OpenAIApi } from 'openai';
-import { getValueFromStorage, SELECTED_OPENAI_MODEL } from '../state';
+import {
+  getValueFromStorage,
+  SELECTED_OPENAI_MODEL,
+} from '../state/syncStorage';
 import { ExtractedAction } from './extractAction';
 
 const systemMessage = `

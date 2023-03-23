@@ -1,3 +1,20 @@
+import { ChatIcon } from '@chakra-ui/icons';
+import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Box,
+  Button,
+  Heading,
+  HStack,
+  Spinner,
+  Textarea,
+  useToast,
+} from '@chakra-ui/react';
+import parserHTML from 'prettier/parser-html';
+import prettier from 'prettier/standalone';
 import React, {
   useCallback,
   useEffect,
@@ -5,37 +22,22 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  Box,
-  Heading,
-  Button,
-  Spinner,
-  Textarea,
-  Accordion,
-  AccordionItem,
-  AccordionPanel,
-  AccordionIcon,
-  AccordionButton,
-  useToast,
-  HStack,
-  VStack,
-} from '@chakra-ui/react';
-import { ChatIcon, CopyIcon } from '@chakra-ui/icons';
-import prettier from 'prettier/standalone';
-import parserHTML from 'prettier/parser-html';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { useAsync } from 'react-use';
-import { getSimplifiedDom } from '../helpers/simplifyDom';
-import { performQuery } from '../helpers/performQuery';
-import extractAction, { ExtractedAction } from '../helpers/extractAction';
-import { CURRENT_TASK_INSTRUCTIONS, useSyncStorage } from '../state';
-import TokenCount from './TokenCount';
 import { callDOMAction } from '../helpers/domActions';
+import extractAction from '../helpers/extractAction';
+import { performQuery } from '../helpers/performQuery';
 import templatize from '../helpers/shrinkHTML/templatize';
+import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { sleep, truthyFilter } from '../helpers/utils';
-import { JSONTree } from 'react-json-tree';
-import TaskHistory, { TaskHistoryEntry } from './TaskHistory';
+import { useAppStore, useStore } from '../state/store';
+import {
+  CURRENT_TASK_INSTRUCTIONS,
+  useSyncStorage,
+} from '../state/syncStorage';
 import CopyButton from './CopyButton';
+import TaskHistory, { TaskHistoryEntry } from './TaskHistory';
+import TokenCount from './TokenCount';
 
 const TaskUI = () => {
   const [taskInstructions, setTaskInstructions] = useSyncStorage(
@@ -43,13 +45,12 @@ const TaskUI = () => {
     ''
   );
 
-  const [taskHistory, setTaskHistory] = useState<TaskHistoryEntry[]>([]);
-  const taskHistoryRef = useRef(taskHistory);
-  useEffect(() => {
-    taskHistoryRef.current = taskHistory;
-  }, [taskHistory]);
-
-  const [taskInProgress, setTaskInProgress] = React.useState(false);
+  const state = useAppStore((state) => ({
+    taskHistory: state.currentTask.history,
+    taskInProgress: state.currentTask.inProgress,
+    taskInterrupted: state.currentTask.interrupted,
+    runTask: state.currentTask.actions.runTask,
+  }));
 
   const toast = useToast();
 
@@ -66,6 +67,10 @@ const TaskUI = () => {
     [toast]
   );
 
+  const runTask = () => {
+    taskInstructions && state.runTask(taskInstructions, toastError);
+  };
+
   const simplifiedHTML =
     useAsync(async () => (await getSimplifiedDom()).outerHTML, []).value ?? '';
   const templatizedHTML = useMemo(() => {
@@ -78,57 +83,10 @@ const TaskUI = () => {
     [simplifiedHTML]
   );
 
-  const onBeginTask = useCallback(async () => {
-    if (!taskInstructions) return;
-    setTaskInProgress(true);
-    setTaskHistory([]);
-
-    try {
-      while (true) {
-        const currentDom = templatize((await getSimplifiedDom()).outerHTML);
-
-        const previousActions = taskHistoryRef.current
-          .map((entry) => entry.action)
-          .filter(truthyFilter);
-
-        console.log('gonna run');
-        const { prompt, response } = await performQuery(
-          taskInstructions,
-          previousActions,
-          currentDom,
-          3,
-          toastError
-        );
-
-        const action = extractAction(response);
-
-        setTaskHistory((prev) => [...prev, { prompt, response, action }]);
-        if (action === null || action.executableAction.type === 'finish') {
-          break;
-        }
-
-        await callDOMAction(
-          action?.executableAction.type,
-          action?.executableAction.args
-        );
-
-        if (taskHistoryRef.current.length > 10) {
-          break;
-        }
-        // sleep 2 seconds
-        await sleep(2000);
-      }
-    } catch (e: any) {
-      toastError(e.message);
-    } finally {
-      setTaskInProgress(false);
-    }
-  }, [toast, taskInstructions, taskHistoryRef]);
-
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onBeginTask();
+      runTask();
     }
   };
 
@@ -144,15 +102,15 @@ const TaskUI = () => {
         onKeyDown={onKeyDown}
       />
       <Button
-        leftIcon={taskInProgress ? <Spinner /> : <ChatIcon />}
-        onClick={onBeginTask}
+        leftIcon={state.taskInProgress ? <Spinner /> : <ChatIcon />}
+        onClick={runTask}
         colorScheme="blue"
-        disabled={taskInProgress || !taskInstructions || !templatizedHTML}
+        disabled={state.taskInProgress || !taskInstructions}
         mb={4}
       >
         Execute Task
       </Button>
-      <TaskHistory taskHistory={taskHistory} taskInProgress={taskInProgress} />
+      <TaskHistory />
 
       <Heading as="h3" size="md" mb="4">
         Page Context

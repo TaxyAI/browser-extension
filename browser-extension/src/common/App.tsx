@@ -1,6 +1,6 @@
 import { Box, Text, ChakraProvider, Heading, HStack } from '@chakra-ui/react';
 import React from 'react';
-import { useSyncStorage } from '../state';
+import { useSyncStorage } from '../state/syncStorage';
 import ModelDropdown from './ModelDropdown';
 import SetKey from './SetKey';
 import TaskUI from './TaskUI';

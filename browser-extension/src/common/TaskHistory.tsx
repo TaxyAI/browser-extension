@@ -1,9 +1,7 @@
-import { CopyIcon } from '@chakra-ui/icons';
 import {
   VStack,
   HStack,
   Box,
-  useToast,
   Accordion,
   AccordionItem,
   Heading,
@@ -15,6 +13,7 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import { ExtractedAction } from '../helpers/extractAction';
+import { useAppStore } from '../state/store';
 import CopyButton from './CopyButton';
 
 export type TaskHistoryEntry = {
@@ -78,25 +77,22 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
   );
 };
 
-type TaskHistoryProps = {
-  taskHistory: TaskHistoryEntry[];
-  loading: boolean;
-};
+export default function TaskHistory() {
+  const { taskHistory, taskInProgress } = useAppStore((state) => ({
+    taskHistory: state.currentTask.history,
+    taskInProgress: state.currentTask.inProgress,
+  }));
 
-export default function TaskHistory({
-  taskHistory,
-  loading,
-}: TaskHistoryProps) {
-  if (taskHistory.length === 0) return null;
+  if (taskHistory.length === 0 && !taskInProgress) return null;
 
   return (
     <VStack mb="4">
       <HStack w="full" alignItems="center">
         <Heading as="h3" size="md">
-          Task History
+          Action History
         </Heading>
         {/* Loading indicator */}
-        {loading && <Spinner color="teal.500" size="sm" />}
+        {taskInProgress && <Spinner color="teal.500" size="sm" />}
         <Spacer />
         <CopyButton text={JSON.stringify(taskHistory, null, 2)} />
       </HStack>

@@ -1,5 +1,5 @@
 import { Select } from '@chakra-ui/react';
-import { SELECTED_OPENAI_MODEL, useSyncStorage } from '../state';
+import { SELECTED_OPENAI_MODEL, useSyncStorage } from '../state/syncStorage';
 import React from 'react';
 
 const ModelDropdown = () => {
