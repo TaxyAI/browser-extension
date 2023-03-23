@@ -162,31 +162,38 @@ export const callDOMAction = async <T extends ActionName>(
   if (!tabId) throw new Error('No active tab found');
   console.log('taking DOM action', type, payload);
 
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  // wrap in a promise so we can await the detach
+  await new Promise<void>((resolve, reject) => {
+    try {
+      chrome.debugger.attach({ tabId }, '1.2', async () => {
+        if (chrome.runtime.lastError) {
+          console.error(
+            'Failed to attach debugger:',
+            chrome.runtime.lastError.message
+          );
+          throw new Error(
+            `Failed to attach debugger: ${chrome.runtime.lastError.message}`
+          );
+        } else {
+          console.log('attached to debugger');
 
-  chrome.debugger.attach({ tabId }, '1.2', async () => {
-    if (chrome.runtime.lastError) {
-      console.error(
-        'Failed to attach debugger:',
-        chrome.runtime.lastError.message
-      );
-      throw new Error(
-        `Failed to attach debugger: ${chrome.runtime.lastError.message}`
-      );
-    } else {
-      console.log('attached to debugger');
+          await chrome.debugger.sendCommand({ tabId }, 'DOM.enable');
+          await chrome.debugger.sendCommand({ tabId }, 'Runtime.enable');
 
-      await chrome.debugger.sendCommand({ tabId }, 'DOM.enable');
-      await chrome.debugger.sendCommand({ tabId }, 'Runtime.enable');
-
-      (async () => {
-        try {
-          // @ts-ignore
-          await domActions[type](tabId, payload);
-        } finally {
-          chrome.debugger.detach({ tabId });
+          (async () => {
+            try {
+              // @ts-ignore
+              await domActions[type](tabId, payload);
+              resolve();
+            } finally {
+              chrome.debugger.detach({ tabId });
+            }
+          })();
         }
-      })();
+      });
+    } catch (e) {
+      reject();
+      throw e;
     }
   });
 };
