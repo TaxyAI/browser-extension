@@ -1,7 +1,7 @@
 import { WEBAGENT_ELEMENT_SELECTOR } from '../constants';
 import { callRPC } from './pageRPC';
 import { scrollScriptString } from './runtimeFunctionStrings';
-import { sleep } from './sleep';
+import { sleep } from './utils';
 
 async function getObjectId(tabId: number, originalId: number) {
   const uniqueId = await callRPC('getUniqueElementSelectorId', [originalId]);

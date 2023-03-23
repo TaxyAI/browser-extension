@@ -11,7 +11,7 @@ You can use the following tools:
 2. setValue(elementId: number, value: string): focuses on and sets the value of an input element
 3. finish(): indicates the task is finished, or that you are unable to complete the task
 
-You will be be given a task to perform and the current state of the DOM. You will also be given previous thoughts and actions that you have taken. 
+You will be be given a task to perform and the current state of the DOM. You will also be given previous thoughts and actions that you have taken. You may retry a failed action up to one time. If after one retry you cannot complete the task, respond with the finish action.
 
 You should respond with an action to take in the following format:
 
@@ -49,7 +49,11 @@ export async function performQuery(
       stop: ['</Action>'],
     });
 
-    return completion.data.choices[0].message?.content?.trim() + '</Action>';
+    return {
+      prompt,
+      response:
+        completion.data.choices[0].message?.content?.trim() + '</Action>',
+    };
   } catch (error: any) {
     throw new Error(error.response.data.error.message);
   }

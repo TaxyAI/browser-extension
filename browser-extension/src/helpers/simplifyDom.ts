@@ -1,6 +1,7 @@
 // console.log('Content script loaded..');
 
 import { callRPC } from './pageRPC';
+import { truthyFilter } from './utils';
 
 export async function getSimplifiedDom() {
   const fullDom = await callRPC('getAnnotatedDOM');
@@ -17,10 +18,6 @@ export async function getSimplifiedDom() {
   ) as HTMLElement;
 
   return simplifiedDom;
-}
-
-function truthyFilter<T>(value: T | null | undefined): value is T {
-  return Boolean(value);
 }
 
 function generateSimplifiedDom(

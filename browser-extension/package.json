@@ -31,6 +31,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-loader": "^4.13.1",
+    "react-json-tree": "^0.18.0",
     "react-syntax-highlighter": "^15.5.0",
     "react-use": "^17.4.0",
     "turndown": "^7.1.1",

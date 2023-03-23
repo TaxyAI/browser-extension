@@ -32,6 +32,14 @@ import { CURRENT_TASK_INSTRUCTIONS, useSyncStorage } from '../state';
 import TokenCount from './TokenCount';
 import { callDOMAction } from '../helpers/domActions';
 import templatize from '../helpers/shrinkHTML/templatize';
+import { truthyFilter } from '../helpers/utils';
+import { JSONTree } from 'react-json-tree';
+
+type HistoryEntry = {
+  prompt: string;
+  response: string;
+  action: ExtractedAction | null;
+};
 
 const TaskUI = () => {
   const [taskInstructions, setTaskInstructions] = useSyncStorage(
@@ -39,7 +47,11 @@ const TaskUI = () => {
     ''
   );
 
-  const [previousActions, setPreviousActions] = useState<ExtractedAction[]>([]);
+  const [taskHistory, setTaskHistory] = useState<HistoryEntry[]>([]);
+  const taskHistoryRef = useRef(taskHistory);
+  useEffect(() => {
+    taskHistoryRef.current = taskHistory;
+  }, [taskHistory]);
 
   const [taskInProgress, setTaskInProgress] = React.useState(false);
 
@@ -57,19 +69,19 @@ const TaskUI = () => {
     [simplifiedHTML]
   );
 
-  const [stepOutput, setStepOutput] = React.useState('');
-
   const onBeginTask = useCallback(async () => {
     if (!taskInstructions) return;
     setTaskInProgress(true);
-    setPreviousActions([]);
+    setTaskHistory([]);
 
     try {
       while (true) {
         const currentDom = templatize((await getSimplifiedDom()).outerHTML);
 
-        console.log('running once');
-        const response = await performQuery(
+        const previousActions = taskHistoryRef.current
+          .map((entry) => entry.action)
+          .filter(truthyFilter);
+        const { prompt, response } = await performQuery(
           taskInstructions,
           previousActions,
           currentDom
@@ -77,18 +89,19 @@ const TaskUI = () => {
 
         const action = extractAction(response);
 
-        setStepOutput(
-          `${response} \n\nExtracted Action: \n ${JSON.stringify(action)}`
-        );
-
         if (action === null || action.executableAction.type === 'finish') {
           break;
         }
-        callDOMAction(
+        setTaskHistory((prev) => [...prev, { prompt, response, action }]);
+
+        await callDOMAction(
           action?.executableAction.type,
           action?.executableAction.args
         );
-        setPreviousActions((prev) => [...prev, action]);
+
+        if (taskHistoryRef.current.length > 10) {
+          break;
+        }
         // sleep 5 seconds
         await new Promise((resolve) => setTimeout(resolve, 5000));
       }
@@ -103,7 +116,7 @@ const TaskUI = () => {
     } finally {
       setTaskInProgress(false);
     }
-  }, [toast, taskInstructions, previousActions]);
+  }, [toast, taskInstructions, taskHistoryRef]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -132,57 +145,33 @@ const TaskUI = () => {
       >
         Submit Instructions
       </Button>
-      {/* LLM Response */}
-      {stepOutput && (
+      {taskHistory.length > 0 && (
         <VStack>
-          {previousActions.length > 0 && (
-            <>
-              <Box as="span" textAlign="left" mr="4">
-                Previous Actions
-              </Box>
-              <SyntaxHighlighter
-                language="javascript"
-                customStyle={{ fontSize: 12 }}
-                wrapLines
-                wrapLongLines
-              >
-                {JSON.stringify(previousActions, null, 2)}
-              </SyntaxHighlighter>
-            </>
-          )}
-
           <HStack w="full">
             <Box as="span" textAlign="left" mr="4">
-              LLM Response
+              Task History
             </Box>
             <CopyIcon
               onClick={(event) => {
                 event.preventDefault();
-                if (stepOutput) {
-                  navigator.clipboard.writeText(stepOutput);
-                  toast({
-                    title: 'Copied to clipboard',
-                    status: 'success',
-                    duration: 3000,
-                    isClosable: true,
-                  });
-                }
+                navigator.clipboard.writeText(
+                  JSON.stringify(taskHistory, null, 2)
+                );
+                toast({
+                  title: 'Copied to clipboard',
+                  status: 'success',
+                  duration: 3000,
+                  isClosable: true,
+                });
               }}
             />
           </HStack>
-
-          <Box w="full" css={{ p: { marginBottom: '1em' } }}>
-            <SyntaxHighlighter
-              language="javascript"
-              customStyle={{ fontSize: 12 }}
-              wrapLines
-              wrapLongLines
-            >
-              {stepOutput}
-            </SyntaxHighlighter>
+          <Box w="full" fontSize="sm">
+            <JSONTree data={taskHistory} />
           </Box>
         </VStack>
       )}
+
       <Accordion allowToggle>
         {/* Templatized HTML */}
         <AccordionItem>

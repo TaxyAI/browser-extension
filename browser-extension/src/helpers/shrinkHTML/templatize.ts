@@ -1,4 +1,4 @@
-import { isNumber, range } from 'lodash';
+import { range } from 'lodash';
 
 type JsonNode =
   | {
