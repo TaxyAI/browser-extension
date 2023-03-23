@@ -65,6 +65,7 @@ export async function performQuery(
           completion.data.choices[0].message?.content?.trim() + '</Action>',
       };
     } catch (error: any) {
+      console.log('performQuery error', error);
       if (error.response.data.error.message.includes('server error')) {
         // Problem with the OpenAI API, try again
         if (notifyError) {
