@@ -14,6 +14,7 @@ export type TaskHistoryEntry = {
 };
 
 export type CurrentTaskSlice = {
+  tabId: number;
   instructions: string | null;
   history: TaskHistoryEntry[];
   inProgress: boolean;
@@ -29,6 +30,7 @@ export const createCurrentTask: MyStateCreator<CurrentTaskSlice> = (
   set,
   get
 ) => ({
+  tabId: -1,
   instructions: null,
   history: [],
   inProgress: false,
@@ -41,8 +43,20 @@ export const createCurrentTask: MyStateCreator<CurrentTaskSlice> = (
         state.currentTask.inProgress = true;
         state.currentTask.interrupted = false;
       });
-
       try {
+        let queryOptions = { active: true, currentWindow: true };
+        let activeTab = (await chrome.tabs.query(queryOptions))[0];
+
+        // If the active tab is a chrome-extension:// page, then we need to get some random other tab for testing
+        if (activeTab.url?.startsWith('chrome')) {
+          queryOptions = { active: false, currentWindow: true };
+          activeTab = (await chrome.tabs.query(queryOptions))[0];
+        }
+        if (!activeTab.id) throw new Error('No active tab found');
+        set((state) => {
+          state.currentTask.tabId = activeTab.id!;
+        });
+
         while (true) {
           const currentDom = templatize((await getSimplifiedDom()).outerHTML);
           const previousActions = get()

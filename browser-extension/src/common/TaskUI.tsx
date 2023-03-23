@@ -30,7 +30,7 @@ import { performQuery } from '../helpers/performQuery';
 import templatize from '../helpers/shrinkHTML/templatize';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { sleep, truthyFilter } from '../helpers/utils';
-import { useAppStore, useStore } from '../state/store';
+import { useAppStore } from '../state/store';
 import {
   CURRENT_TASK_INSTRUCTIONS,
   useSyncStorage,
