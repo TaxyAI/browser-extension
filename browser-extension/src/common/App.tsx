@@ -1,13 +1,12 @@
 import { Box, Text, ChakraProvider, Heading, HStack } from '@chakra-ui/react';
 import React from 'react';
-import { useAppStore } from '../state/store';
-import { useSyncStorage } from '../state/syncStorage';
+import { useAppState } from '../state/store';
 import ModelDropdown from './ModelDropdown';
 import SetKey from './SetKey';
 import TaskUI from './TaskUI';
 
 const App = ({ showIntro }: { showIntro?: boolean }) => {
-  const openAIKey = useAppStore((state) => state.settings.openAIKey);
+  const openAIKey = useAppState((state) => state.settings.openAIKey);
 
   return (
     <ChakraProvider>

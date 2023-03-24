@@ -20,20 +20,22 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { useAsync } from 'react-use';
 import templatize from '../helpers/shrinkHTML/templatize';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
-import { useAppStore } from '../state/store';
+import { useAppState } from '../state/store';
 import CopyButton from './CopyButton';
+import RunTaskButton from './RunTaskButton';
 import TaskHistory from './TaskHistory';
 import TokenCount from './TokenCount';
 
 const TaskUI = () => {
-  const state = useAppStore((state) => ({
+  const state = useAppState((state) => ({
     taskHistory: state.currentTask.history,
-    taskInProgress: state.currentTask.inProgress,
-    taskInterrupted: state.currentTask.interrupted,
+    taskStatus: state.currentTask.status,
     runTask: state.currentTask.actions.runTask,
     instructions: state.ui.instructions,
     setInstructions: state.ui.actions.setInstructions,
   }));
+
+  const taskInProgress = state.taskStatus === 'running';
 
   const toast = useToast();
 
@@ -51,7 +53,7 @@ const TaskUI = () => {
   );
 
   const runTask = () => {
-    state.instructions && state.runTask(state.instructions, toastError);
+    state.instructions && state.runTask(toastError);
   };
 
   const simplifiedHTML =
@@ -80,20 +82,12 @@ const TaskUI = () => {
         noOfLines={2}
         placeholder="Task instructions"
         value={state.instructions || ''}
-        disabled={state.taskInProgress}
+        disabled={taskInProgress}
         onChange={(e) => state.setInstructions(e.target.value)}
         mb={2}
         onKeyDown={onKeyDown}
       />
-      <Button
-        leftIcon={state.taskInProgress ? <Spinner /> : <ChatIcon />}
-        onClick={runTask}
-        colorScheme="blue"
-        disabled={state.taskInProgress || !state.instructions}
-        mb={4}
-      >
-        Execute Task
-      </Button>
+      <RunTaskButton runTask={runTask} />
       <TaskHistory />
 
       <Heading as="h3" size="md" mb="4">

@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import { ExtractedAction } from '../helpers/extractAction';
-import { useAppStore } from '../state/store';
+import { useAppState } from '../state/store';
 import CopyButton from './CopyButton';
 
 export type TaskHistoryEntry = {
@@ -78,24 +78,27 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
 };
 
 export default function TaskHistory() {
-  const { taskHistory, taskInProgress } = useAppStore((state) => ({
+  const { taskHistory, taskStatus } = useAppState((state) => ({
+    taskStatus: state.currentTask.status,
     taskHistory: state.currentTask.history,
-    taskInProgress: state.currentTask.inProgress,
   }));
 
-  if (taskHistory.length === 0 && !taskInProgress) return null;
+  if (taskHistory.length === 0 && taskStatus !== 'running') return null;
 
   return (
     <VStack mb="4">
-      <HStack w="full" alignItems="center">
+      <HStack w="full">
         <Heading as="h3" size="md">
           Action History
         </Heading>
-        {/* Loading indicator */}
-        {taskInProgress && <Spinner color="teal.500" size="sm" />}
         <Spacer />
         <CopyButton text={JSON.stringify(taskHistory, null, 2)} />
       </HStack>
+      {taskHistory.length === 0 && (
+        <Box color="gray.600" fontSize="sm">
+          Waiting for response...
+        </Box>
+      )}
       <Accordion allowToggle allowMultiple w="full" pb="4">
         {taskHistory.map((entry, index) => (
           <TaskHistoryItem key={index} index={index} entry={entry} />
