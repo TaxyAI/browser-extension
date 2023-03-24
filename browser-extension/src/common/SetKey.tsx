@@ -1,10 +1,10 @@
 import { CheckIcon } from '@chakra-ui/icons';
 import { Button, Input, Link, Stack, Text } from '@chakra-ui/react';
 import React from 'react';
-import { useAppStore } from '../state/store';
+import { useAppState } from '../state/store';
 
 const SetKey = () => {
-  const { openAIKey, updateSettings } = useAppStore((state) => ({
+  const { openAIKey, updateSettings } = useAppState((state) => ({
     openAIKey: state.settings.openAIKey,
     updateSettings: state.settings.actions.update,
   }));

@@ -1,5 +1,5 @@
 import { Configuration, OpenAIApi } from 'openai';
-import { useAppStore } from '../state/store';
+import { useAppState } from '../state/store';
 import { ExtractedAction } from './extractAction';
 
 const systemMessage = `
@@ -26,7 +26,7 @@ export async function performQuery(
   maxAttempts: number = 3,
   notifyError?: (error: string) => void
 ) {
-  const model = useAppStore.getState().settings.selectedModel;
+  const model = useAppState.getState().settings.selectedModel;
   const prompt = formatPrompt(taskInstructions, previousActions, simplifiedDOM);
   const openai = new OpenAIApi(
     new Configuration({

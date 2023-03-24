@@ -1,11 +1,11 @@
 import { WEBAGENT_ELEMENT_SELECTOR } from '../constants';
-import { useAppStore } from '../state/store';
+import { useAppState } from '../state/store';
 import { callRPC } from './pageRPC';
 import { scrollScriptString } from './runtimeFunctionStrings';
 import { sleep } from './utils';
 
 async function sendCommand(method: string, params?: any) {
-  const tabId = useAppStore.getState().currentTask.tabId;
+  const tabId = useAppState.getState().currentTask.tabId;
   return chrome.debugger.sendCommand({ tabId }, method, params);
 }
 
@@ -135,7 +135,7 @@ export const callDOMAction = async <T extends ActionName>(
   type: keyof typeof domActions,
   payload: DOMActionPayload<T>
 ): Promise<void> => {
-  const tabId = useAppStore.getState().currentTask.tabId;
+  const tabId = useAppState.getState().currentTask.tabId;
   console.log('taking DOM action', type, payload);
 
   const blacklistedExtensionIds = [

@@ -2,10 +2,10 @@ import React from 'react';
 import { Text } from '@chakra-ui/react';
 import { countTokens } from '../helpers/countTokens';
 import { useAsync } from 'react-use';
-import { useAppStore } from '../state/store';
+import { useAppState } from '../state/store';
 
 const TokenCount = ({ html }: { html: string }) => {
-  const selectedModel = useAppStore((state) => state.settings.selectedModel);
+  const selectedModel = useAppState((state) => state.settings.selectedModel);
 
   const numTokens =
     useAsync(

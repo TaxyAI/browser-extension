@@ -19,7 +19,7 @@ export type MyStateCreator<T> = StateCreator<
   T
 >;
 
-export const useAppStore = create<StoreType>()(
+export const useAppState = create<StoreType>()(
   persist(
     immer((...a) => ({
       currentTask: createCurrentTaskSlice(...a),

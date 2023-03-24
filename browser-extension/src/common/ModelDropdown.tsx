@@ -1,9 +1,9 @@
 import { Select } from '@chakra-ui/react';
 import React from 'react';
-import { useAppStore } from '../state/store';
+import { useAppState } from '../state/store';
 
 const ModelDropdown = () => {
-  const { selectedModel, updateSettings } = useAppStore((state) => ({
+  const { selectedModel, updateSettings } = useAppState((state) => ({
     selectedModel: state.settings.selectedModel,
     updateSettings: state.settings.actions.update,
   }));

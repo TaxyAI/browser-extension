@@ -16,13 +16,10 @@ export type CurrentTaskSlice = {
   tabId: number;
   instructions: string | null;
   history: TaskHistoryEntry[];
-  inProgress: boolean;
-  interrupted: boolean;
+  status: 'idle' | 'running' | 'success' | 'error' | 'interrupted';
   actions: {
-    runTask: (
-      instructions: string,
-      onError: (error: string) => void
-    ) => Promise<void>;
+    runTask: (onError: (error: string) => void) => Promise<void>;
+    interrupt: () => void;
   };
 };
 export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
@@ -32,35 +29,38 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
   tabId: -1,
   instructions: null,
   history: [],
-  inProgress: false,
-  interrupted: false,
+  status: 'idle',
   actions: {
-    runTask: async (instructions, onError) => {
+    runTask: async (onError) => {
+      const isInterrupted = () => get().currentTask.status === 'interrupted';
+
+      const instructions = get().ui.instructions;
+
+      if (!instructions || get().currentTask.status === 'running') return;
+
       set((state) => {
         state.currentTask.instructions = instructions;
         state.currentTask.history = [];
-        state.currentTask.inProgress = true;
-        state.currentTask.interrupted = false;
+        state.currentTask.status = 'running';
       });
       try {
         let queryOptions = { active: true, currentWindow: true };
         let activeTab = (await chrome.tabs.query(queryOptions))[0];
 
-        // If the active tab is a chrome-extension:// page, then we need to get some random other tab for testing
-        if (activeTab.url?.startsWith('chrome')) {
-          queryOptions = { active: false, currentWindow: true };
-          activeTab = (await chrome.tabs.query(queryOptions))[0];
-        }
         if (!activeTab.id) throw new Error('No active tab found');
         set((state) => {
           state.currentTask.tabId = activeTab.id!;
         });
 
         while (true) {
+          if (isInterrupted()) break;
+
           const currentDom = templatize((await getSimplifiedDom()).outerHTML);
           const previousActions = get()
             .currentTask.history.map((entry) => entry.action)
             .filter(truthyFilter);
+
+          if (isInterrupted()) break;
 
           const { prompt, response } = await performQuery(
             instructions,
@@ -69,6 +69,8 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             3,
             onError
           );
+
+          if (isInterrupted()) break;
 
           const action = extractAction(response);
 
@@ -84,17 +86,30 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             action?.executableAction.args
           );
 
+          if (isInterrupted()) break;
+
+          // While testing let's automatically stop after 10 action to avoid
+          // infinite loops
           if (get().currentTask.history.length >= 10) {
             break;
           }
           // sleep 2 seconds
           await sleep(2000);
         }
+        set((state) => {
+          state.currentTask.status = 'success';
+        });
       } catch (e: any) {
         onError(e.message);
-      } finally {
-        set((state) => (state.currentTask.inProgress = false));
+        set((state) => {
+          state.currentTask.status = 'error';
+        });
       }
+    },
+    interrupt: () => {
+      set((state) => {
+        state.currentTask.status = 'interrupted';
+      });
     },
   },
 });

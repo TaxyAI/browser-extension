@@ -12,7 +12,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "noEmit": false,
+    "noEmit": true,
     "jsx": "react"
   },
   "include": ["src"],
