@@ -135,7 +135,6 @@ export const callDOMAction = async <T extends ActionName>(
   type: keyof typeof domActions,
   payload: DOMActionPayload<T>
 ): Promise<void> => {
-  const tabId = useAppState.getState().currentTask.tabId;
   console.log('taking DOM action', type, payload);
 
   const blacklistedExtensionIds = [
