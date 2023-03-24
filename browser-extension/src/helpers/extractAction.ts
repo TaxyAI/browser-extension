@@ -60,7 +60,7 @@ export default function extractAction(text: string): ExtractedAction | null {
       type: 'setValue',
       args: {
         id: parseInt(index, 10),
-        value,
+        value: JSON.parse(value) as string,
       },
     };
   } else if (actionType === 'finish') {

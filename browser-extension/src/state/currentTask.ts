@@ -32,7 +32,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
   status: 'idle',
   actions: {
     runTask: async (onError) => {
-      const isInterrupted = () => get().currentTask.status === 'interrupted';
+      const wasStopped = () => get().currentTask.status !== 'running';
 
       const instructions = get().ui.instructions;
 
@@ -53,14 +53,14 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         });
 
         while (true) {
-          if (isInterrupted()) break;
+          if (wasStopped()) break;
 
           const currentDom = templatize((await getSimplifiedDom()).outerHTML);
           const previousActions = get()
             .currentTask.history.map((entry) => entry.action)
             .filter(truthyFilter);
 
-          if (isInterrupted()) break;
+          if (wasStopped()) break;
 
           const { prompt, response } = await performQuery(
             instructions,
@@ -70,7 +70,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             onError
           );
 
-          if (isInterrupted()) break;
+          if (wasStopped()) break;
 
           const action = extractAction(response);
 
@@ -86,7 +86,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             action?.executableAction.args
           );
 
-          if (isInterrupted()) break;
+          if (wasStopped()) break;
 
           // While testing let's automatically stop after 10 action to avoid
           // infinite loops

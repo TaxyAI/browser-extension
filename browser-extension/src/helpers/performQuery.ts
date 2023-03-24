@@ -28,16 +28,18 @@ export async function performQuery(
 ) {
   const model = useAppState.getState().settings.selectedModel;
   const prompt = formatPrompt(taskInstructions, previousActions, simplifiedDOM);
+  const key = useAppState.getState().settings.openAIKey;
+  if (!key) {
+    notifyError?.('No OpenAI key found');
+    return null;
+  }
+
   const openai = new OpenAIApi(
     new Configuration({
-      apiKey: (await chrome.storage.sync.get('openai-key'))['openai-key'],
+      apiKey: key,
     })
   );
 
-  console.log(
-    'api key',
-    (await chrome.storage.sync.get('openai-key'))['openai-key']
-  );
   for (let i = 0; i < maxAttempts; i++) {
     try {
       // Log object to collapse it in the console
