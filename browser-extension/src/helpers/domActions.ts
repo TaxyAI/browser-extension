@@ -109,28 +109,14 @@ async function blurFocusedElement() {
 }
 
 async function setValue(payload: { id: number; value: string }): Promise<void> {
-  console.log(0);
-  console.log(chrome.runtime.lastError);
   const objectId = await getObjectId(payload.id);
-  console.log(1);
-  console.log(chrome.runtime.lastError);
   await scrollIntoView(objectId);
-  console.log(2);
-  console.log(chrome.runtime.lastError);
   const { x, y } = await getCenterCoordinates(objectId);
-  console.log(3);
-  console.log(chrome.runtime.lastError);
 
   await selectAllText(x, y);
-  console.log(4);
-  console.log(chrome.runtime.lastError);
   await typeText(payload.value);
-  console.log(5);
-  console.log(chrome.runtime.lastError);
   // blur the element
   await blurFocusedElement();
-  console.log(6);
-  console.log(chrome.runtime.lastError);
 }
 
 export const domActions = {
@@ -151,6 +137,47 @@ export const callDOMAction = async <T extends ActionName>(
 ): Promise<void> => {
   const tabId = useAppStore.getState().currentTask.tabId;
   console.log('taking DOM action', type, payload);
+
+  const blacklistedExtensionIds = [
+    // Dashlane
+    'fdjamakpfbbddfjaooikfcpapjohcfmg',
+    // LastPass
+    'hdokiejnpimakedhajhdlcegeplioahd',
+  ];
+
+  const enabledBlacklistedExtensions = await new Promise<
+    chrome.management.ExtensionInfo[]
+  >((resolve, reject) => {
+    chrome.management.getAll((extensions) => {
+      if (chrome.runtime.lastError) {
+        console.error(
+          'Failed to get extensions:',
+          chrome.runtime.lastError.message
+        );
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(
+          extensions.filter(
+            (extension) =>
+              extension.type === 'extension' &&
+              extension.enabled &&
+              blacklistedExtensionIds.includes(extension.id)
+          )
+        );
+      }
+    });
+  });
+
+  for (const extension of enabledBlacklistedExtensions) {
+    chrome.management.setEnabled(extension.id, false, () => {
+      if (chrome.runtime.lastError) {
+        console.error(
+          `Failed to disable extension ${extension.id}:`,
+          chrome.runtime.lastError.message
+        );
+      }
+    });
+  }
 
   // wrap in a promise so we can await the detach
   await new Promise<void>((resolve, reject) => {
@@ -187,4 +214,15 @@ export const callDOMAction = async <T extends ActionName>(
       throw e;
     }
   });
+
+  for (const extension of enabledBlacklistedExtensions) {
+    chrome.management.setEnabled(extension.id, true, () => {
+      if (chrome.runtime.lastError) {
+        console.error(
+          `Failed to enable extension ${extension.id}:`,
+          chrome.runtime.lastError.message
+        );
+      }
+    });
+  }
 };

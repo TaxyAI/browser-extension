@@ -7,11 +7,10 @@
   "permissions": [
     "tabs",
     "activeTab",
-    "history",
     "storage",
-    "clipboardRead",
     "clipboardWrite",
-    "debugger"
+    "debugger",
+    "management"
   ],
   "action": {
     "default_popup": "popup.html",
