@@ -1,14 +1,11 @@
 import React from 'react';
 import { Text } from '@chakra-ui/react';
-import { SELECTED_OPENAI_MODEL, useSyncStorage } from '../state/syncStorage';
 import { countTokens } from '../helpers/countTokens';
 import { useAsync } from 'react-use';
+import { useAppStore } from '../state/store';
 
 const TokenCount = ({ html }: { html: string }) => {
-  const [selectedModel] = useSyncStorage(
-    SELECTED_OPENAI_MODEL,
-    'gpt-3.5-turbo'
-  );
+  const selectedModel = useAppStore((state) => state.settings.selectedModel);
 
   const numTokens =
     useAsync(

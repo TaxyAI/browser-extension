@@ -1,10 +1,13 @@
 import { CheckIcon } from '@chakra-ui/icons';
 import { Button, Input, Link, Stack, Text } from '@chakra-ui/react';
 import React from 'react';
-import { useSyncStorage } from '../state/syncStorage';
+import { useAppStore } from '../state/store';
 
 const SetKey = () => {
-  const [openAIKey, setOpenAIKey] = useSyncStorage('openai-key');
+  const { openAIKey, updateSettings } = useAppStore((state) => ({
+    openAIKey: state.settings.openAIKey,
+    updateSettings: state.settings.actions.update,
+  }));
 
   const [candidateKey, setCandidateKey] = React.useState(openAIKey || '');
 
@@ -27,7 +30,7 @@ const SetKey = () => {
       />
       <Button
         onClick={() => {
-          setOpenAIKey(candidateKey);
+          updateSettings({ openAIKey: candidateKey });
         }}
         leftIcon={<CheckIcon />}
         colorScheme="teal"

@@ -1,11 +1,10 @@
-import { StateCreator } from 'zustand';
 import { callDOMAction } from '../helpers/domActions';
 import extractAction, { ExtractedAction } from '../helpers/extractAction';
 import { performQuery } from '../helpers/performQuery';
 import templatize from '../helpers/shrinkHTML/templatize';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { sleep, truthyFilter } from '../helpers/utils';
-import { MyStateCreator, StoreType } from './store';
+import { MyStateCreator } from './store';
 
 export type TaskHistoryEntry = {
   prompt: string;
@@ -26,7 +25,7 @@ export type CurrentTaskSlice = {
     ) => Promise<void>;
   };
 };
-export const createCurrentTask: MyStateCreator<CurrentTaskSlice> = (
+export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
   set,
   get
 ) => ({

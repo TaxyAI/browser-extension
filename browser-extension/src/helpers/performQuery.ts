@@ -1,8 +1,5 @@
 import { Configuration, OpenAIApi } from 'openai';
-import {
-  getValueFromStorage,
-  SELECTED_OPENAI_MODEL,
-} from '../state/syncStorage';
+import { useAppStore } from '../state/store';
 import { ExtractedAction } from './extractAction';
 
 const systemMessage = `
@@ -29,10 +26,7 @@ export async function performQuery(
   maxAttempts: number = 3,
   notifyError?: (error: string) => void
 ) {
-  const model = (await getValueFromStorage(
-    SELECTED_OPENAI_MODEL,
-    'gpt-3.5-turbo'
-  )) as string;
+  const model = useAppStore.getState().settings.selectedModel;
   const prompt = formatPrompt(taskInstructions, previousActions, simplifiedDOM);
   const openai = new OpenAIApi(
     new Configuration({

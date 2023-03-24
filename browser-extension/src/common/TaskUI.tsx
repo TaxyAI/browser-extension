@@ -15,41 +15,24 @@ import {
 } from '@chakra-ui/react';
 import parserHTML from 'prettier/parser-html';
 import prettier from 'prettier/standalone';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { useAsync } from 'react-use';
-import { callDOMAction } from '../helpers/domActions';
-import extractAction from '../helpers/extractAction';
-import { performQuery } from '../helpers/performQuery';
 import templatize from '../helpers/shrinkHTML/templatize';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
-import { sleep, truthyFilter } from '../helpers/utils';
 import { useAppStore } from '../state/store';
-import {
-  CURRENT_TASK_INSTRUCTIONS,
-  useSyncStorage,
-} from '../state/syncStorage';
 import CopyButton from './CopyButton';
-import TaskHistory, { TaskHistoryEntry } from './TaskHistory';
+import TaskHistory from './TaskHistory';
 import TokenCount from './TokenCount';
 
 const TaskUI = () => {
-  const [taskInstructions, setTaskInstructions] = useSyncStorage(
-    CURRENT_TASK_INSTRUCTIONS,
-    ''
-  );
-
   const state = useAppStore((state) => ({
     taskHistory: state.currentTask.history,
     taskInProgress: state.currentTask.inProgress,
     taskInterrupted: state.currentTask.interrupted,
     runTask: state.currentTask.actions.runTask,
+    instructions: state.ui.instructions,
+    setInstructions: state.ui.actions.setInstructions,
   }));
 
   const toast = useToast();
@@ -68,7 +51,7 @@ const TaskUI = () => {
   );
 
   const runTask = () => {
-    taskInstructions && state.runTask(taskInstructions, toastError);
+    state.instructions && state.runTask(state.instructions, toastError);
   };
 
   const simplifiedHTML =
@@ -96,8 +79,9 @@ const TaskUI = () => {
         autoFocus
         noOfLines={2}
         placeholder="Task instructions"
-        value={taskInstructions || ''}
-        onChange={(e) => setTaskInstructions(e.target.value)}
+        value={state.instructions || ''}
+        disabled={state.taskInProgress}
+        onChange={(e) => state.setInstructions(e.target.value)}
         mb={2}
         onKeyDown={onKeyDown}
       />
@@ -105,7 +89,7 @@ const TaskUI = () => {
         leftIcon={state.taskInProgress ? <Spinner /> : <ChatIcon />}
         onClick={runTask}
         colorScheme="blue"
-        disabled={state.taskInProgress || !taskInstructions}
+        disabled={state.taskInProgress || !state.instructions}
         mb={4}
       >
         Execute Task
