@@ -44,12 +44,42 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         state.currentTask.status = 'running';
       });
       try {
-        let queryOptions = { active: true, currentWindow: true };
-        let activeTab = (await chrome.tabs.query(queryOptions))[0];
+        let activeTab = (
+          await chrome.tabs.query({ active: true, currentWindow: true })
+        )[0];
 
         if (!activeTab.id) throw new Error('No active tab found');
+        const tabId = activeTab.id;
         set((state) => {
-          state.currentTask.tabId = activeTab.id!;
+          state.currentTask.tabId = tabId;
+        });
+
+        // wrap in a promise so we can await the attach
+        await new Promise<void>((resolve, reject) => {
+          try {
+            chrome.debugger.attach({ tabId }, '1.2', async () => {
+              if (chrome.runtime.lastError) {
+                console.error(
+                  'Failed to attach debugger:',
+                  chrome.runtime.lastError.message
+                );
+                throw new Error(
+                  `Failed to attach debugger: ${chrome.runtime.lastError.message}`
+                );
+              } else {
+                console.log('attached to debugger');
+
+                await chrome.debugger.sendCommand({ tabId }, 'DOM.enable');
+                console.log('DOM enabled');
+                await chrome.debugger.sendCommand({ tabId }, 'Runtime.enable');
+                console.log('Runtime enabled');
+                resolve();
+              }
+            });
+          } catch (e) {
+            reject();
+            throw e;
+          }
         });
 
         while (true) {
@@ -104,6 +134,16 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         set((state) => {
           state.currentTask.status = 'error';
         });
+      } finally {
+        // check if debugger is attached
+        const targets = await chrome.debugger.getTargets();
+        const isAttached = targets.some(
+          (target) =>
+            target.tabId === get().currentTask.tabId && target.attached
+        );
+        if (isAttached) {
+          chrome.debugger.detach({ tabId: get().currentTask.tabId });
+        }
       }
     },
     interrupt: () => {

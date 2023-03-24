@@ -179,41 +179,9 @@ export const callDOMAction = async <T extends ActionName>(
     });
   }
 
-  // wrap in a promise so we can await the detach
-  await new Promise<void>((resolve, reject) => {
-    try {
-      chrome.debugger.attach({ tabId }, '1.2', async () => {
-        if (chrome.runtime.lastError) {
-          console.error(
-            'Failed to attach debugger:',
-            chrome.runtime.lastError.message
-          );
-          throw new Error(
-            `Failed to attach debugger: ${chrome.runtime.lastError.message}`
-          );
-        } else {
-          console.log('attached to debugger');
-
-          await sendCommand('DOM.enable');
-          console.log('DOM enabled');
-          await sendCommand('Runtime.enable');
-          console.log('Runtime enabled');
-
-          try {
-            // @ts-ignore
-            await domActions[type](payload);
-            console.log('DOM action complete');
-          } finally {
-            chrome.debugger.detach({ tabId });
-            resolve();
-          }
-        }
-      });
-    } catch (e) {
-      reject();
-      throw e;
-    }
-  });
+  // @ts-ignore
+  await domActions[type](payload);
+  console.log('DOM action complete');
 
   for (const extension of enabledBlacklistedExtensions) {
     chrome.management.setEnabled(extension.id, true, () => {
