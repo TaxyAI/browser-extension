@@ -118,9 +118,9 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
 
           if (wasStopped()) break;
 
-          // While testing let's automatically stop after 10 action to avoid
+          // While testing let's automatically stop after 50 actions to avoid
           // infinite loops
-          if (get().currentTask.history.length >= 10) {
+          if (get().currentTask.history.length >= 50) {
             break;
           }
           // sleep 2 seconds
