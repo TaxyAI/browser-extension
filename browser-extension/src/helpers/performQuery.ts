@@ -105,6 +105,8 @@ ${taskInstructions}
 
 ${previousActionsString}
 
+Current time: ${new Date().toLocaleString()}
+
 Current page contents:
 ${pageContents}`;
 }
