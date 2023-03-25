@@ -46,10 +46,16 @@ Currently this extension is only available through the GitHub repo. We plan to r
 ## Simple Demos
 
 ### Writing an essay in the OpenAI playground
+![playground](https://user-images.githubusercontent.com/41524992/227739246-53cb4587-6fa1-491f-80fa-f05ec0b13967.gif)
+
 
 ### Creating a calendar event
+![Calendar](https://user-images.githubusercontent.com/41524992/227739258-e4721e54-1f97-46e2-a50e-36580ef26bc7.gif)
+
 
 ### Searching for and playing the movie Oblivion in Netflix
+
+
 
 ### Add your own!
 
