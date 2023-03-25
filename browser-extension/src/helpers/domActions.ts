@@ -45,7 +45,7 @@ async function getCenterCoordinates(objectId: string) {
   return { x: centerX, y: centerY };
 }
 
-const delayBetweenClicks = 200; // Set this value to control the delay between clicks
+const delayBetweenClicks = 1000; // Set this value to control the delay between clicks
 const delayBetweenKeystrokes = 100; // Set this value to control typing speed
 
 async function clickAtPosition(
