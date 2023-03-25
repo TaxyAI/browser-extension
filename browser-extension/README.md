@@ -54,6 +54,7 @@ Currently this extension is only available through the GitHub repo. We plan to r
 
 
 ### Searching for and playing the movie Oblivion in Netflix
+![Oblivion](https://user-images.githubusercontent.com/41524992/227739533-9c8711b0-ed21-4b28-9099-823a0d2a4db2.gif)
 
 
 
@@ -63,4 +64,4 @@ If you have an interesting demo you'd like to share, submit a PR to add your own
 
 ## Resources:
 
-- [Chrome Extension documentation](https://developer.chrome.com/extensions/getstarted)
+- [Getting Started with Chrome Extensions](https://developer.chrome.com/extensions/getstarted)
