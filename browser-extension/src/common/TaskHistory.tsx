@@ -58,7 +58,7 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
             {index + 1}.
           </Box>
           <Box as="span" textAlign="left" flex="1">
-            {entry.action?.thought}
+            {entry.action?.thought || 'Task Complete!'}
           </Box>
           <AccordionIcon />
         </AccordionButton>
