@@ -4,6 +4,8 @@
 
 Taxy is a Chrome Extension that uses LLMs like GPT-3.5 and GPT-4 to understand and fulfill user instructions by manipulating the browser's [DOM](https://www.w3schools.com/js/js_htmldom.asp). Taxy is currently limited to clicking and typing, but more action types such as scrolling and dragging are coming soon. Check out the demos below to see a small sample of what it can already do!
 
+![Oblivion](https://user-images.githubusercontent.com/41524992/227739533-9c8711b0-ed21-4b28-9099-823a0d2a4db2.gif)
+
 ## Table of Contents
 
 - [Taxy Browser Extension](#web-agent-browser-extension)
