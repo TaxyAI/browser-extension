@@ -2,7 +2,7 @@
 
 # Web Agent Browser Extension
 
-Web Agent is a Chrome Extension that sends a simplified version of the browser's DOM to GPT-4 along with a user-specified task to accomplish, then utilizes Chrome's built-in extension APIs to interact with the browser to perform the actions GPT-4 suggests.
+Web Agent is a Chrome Extension that uses LLMs like GPT-3.5 and GPT-4 to understand and fulfill user instructions by manipulating the DOM. Web Agent is currently limited to clicking and typing, but more action types such as scrolling and dragging are on the roadmap. Check out the demos below to see a small sample of what it can do!
 
 ## Table of Contents
 
