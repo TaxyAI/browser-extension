@@ -2,7 +2,7 @@
 
 # Web Agent Browser Extension
 
-Web Agent is a Chrome Extension that sends a simplified version of the browser's DOM to GPT-4 along with a user-specified task to accomplish, then utilizes Chrome's built-in extension APIs to interact with the browser to perform the actions GPT-4 suggests.
+Web Agent is a Chrome Extension that uses LLMs like GPT-3.5 and GPT-4 to understand and fulfill user instructions by manipulating the browser's [DOM](https://www.w3schools.com/js/js_htmldom.asp). Web Agent is currently limited to clicking and typing, but more action types such as scrolling and dragging are coming soon. Check out the demos below to see a small sample of what it can already do!
 
 ## Table of Contents
 
@@ -58,20 +58,20 @@ Currently this extension is only available through the GitHub repo. We plan to r
 ### Installing the extension
 
 1. Check if your [Node.js](https://nodejs.org/) version is >= **16**.
-2. Clone this repository.
-3. Run `yarn` to install the dependencies.
+2. Clone this repository
+3. Run `yarn` to install the dependencies
 4. Run `yarn start` to build the package
 5. Load your extension on Chrome by doing the following:
    1. Navigate to `chrome://extensions/`
    2. Toggle `Developer mode`
    3. Click on `Load unpacked extension`
-   4. Select the `build` folder that `yarn start` generated.
+   4. Select the `build` folder that `yarn start` generated
 
 ### Running in your browser
 
 1. Once installed, the browser plugin will be available in two forms:
    1. As a Popup. Activate by pressing `cmd+shift+y` on mac or `ctrl+shift+y` on windows/linux, or by clicking the extension logo in your browser.
-   2. As a devtools panel Activate by first opening the browser's developer tools, then navigating to the `Web Agent` panel.
+   2. As a devtools panel. Activate by first opening the browser's developer tools, then navigating to the `Web Agent` panel.
 2. The next thing you need to do is create or access an existing [OpenAI API Key](https://platform.openai.com/account/api-keys) and paste it in the provided prompt. This key will be stored securely in your browser, not uploaded to any external server.
 3. Finally, navigate to a webpage you want Web Agent to act upon (for instance the [OpenAI playground](https://platform.openai.com/playground)) and start experimenting!
 
