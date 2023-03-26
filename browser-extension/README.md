@@ -10,9 +10,9 @@ Web Agent is a Chrome Extension that sends a simplified version of the browser's
   - [Table of Contents](#table-of-contents)
   - [How it Works](#how-it-works)
   - [Simple Demos](#simple-demos)
-    - [Writing an essay in the OpenAI playground](#writing-an-essay-in-the-openai-playground)
-    - [Creating a calendar event](#creating-a-calendar-event)
     - [Searching for and playing the movie Oblivion in Netflix](#searching-for-and-playing-the-movie-oblivion-in-netflix)
+    - [Creating a calendar event](#creating-a-calendar-event)
+    - [Writing an essay in the OpenAI playground](#writing-an-essay-in-the-openai-playground)
     - [Add your own!](#add-your-own)
   - [Installing and Running](#installing-and-running)
     - [Installing the extension](#installing-the-extension)
@@ -34,17 +34,17 @@ Web Agent is a Chrome Extension that sends a simplified version of the browser's
 
 ## Simple Demos
 
-### Writing an essay in the OpenAI playground
+### Searching for and playing the movie Oblivion in Netflix
 
-![playground](https://user-images.githubusercontent.com/41524992/227739246-53cb4587-6fa1-491f-80fa-f05ec0b13967.gif)
+![Oblivion](https://user-images.githubusercontent.com/41524992/227739533-9c8711b0-ed21-4b28-9099-823a0d2a4db2.gif)
 
 ### Creating a calendar event
 
 ![Calendar](https://user-images.githubusercontent.com/41524992/227739258-e4721e54-1f97-46e2-a50e-36580ef26bc7.gif)
 
-### Searching for and playing the movie Oblivion in Netflix
+### Writing an essay in the OpenAI playground
 
-![Oblivion](https://user-images.githubusercontent.com/41524992/227739533-9c8711b0-ed21-4b28-9099-823a0d2a4db2.gif)
+![playground](https://user-images.githubusercontent.com/41524992/227739246-53cb4587-6fa1-491f-80fa-f05ec0b13967.gif)
 
 ### Add your own!
 
