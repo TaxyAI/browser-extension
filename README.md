@@ -8,7 +8,7 @@ Web Agent is a Chrome Extension that sends a simplified version of the browser's
 
 - [Web Agent Browser Extension](#web-agent-browser-extension)
   - [Table of Contents](#table-of-contents)
-  - [How it Works](#how-it-works)
+  - [How it Works - The Action Cycle](#how-it-works---the-action-cycle)
   - [Simple Demos](#simple-demos)
     - [Searching for and playing the movie Oblivion in Netflix](#searching-for-and-playing-the-movie-oblivion-in-netflix)
     - [Creating a calendar event](#creating-a-calendar-event)
@@ -20,17 +20,18 @@ Web Agent is a Chrome Extension that sends a simplified version of the browser's
   - [Tech Stack](#tech-stack)
   - [Resources](#resources)
 
-## How it Works
+## How it Works - The Action Cycle
 
-1. Web Agent runs a content script on the browser page to pull the entire DOM. It simplifies it to only include interactive or contextual elements, like text. It assigns an id to each interactive element.
-2. Web Agent sends the simplified DOM, along with the user's instructions, to the selected LLM (currently limited to GPT-3.5 and GPT-4). Web Agent informs the LLM of two potential actions to interact with the webpage:
+1. Web Agent runs a content script on the webpage to pull the entire DOM. It simplifies the html it receives to only include interactive or contextual elements, like buttons or text. It assigns an id to each interactive element.
+2. Web Agent sends the simplified DOM, along with the user's instructions, to a selected LLM (currently limited to GPT-3.5 and GPT-4). Web Agent informs the LLM of two methods to interact with the webpage:
    1. `click(id)` - click on the interactive element associated with that id
-   2. `setValue(id, text)` - focus on a text input, clear its existing text, and type the provided text into that input
-3. If possible, Web Agent parses the LLM's response for an action to complete, and then takes that action using the [chrome.debugger API](https://developer.chrome.com/docs/extensions/reference/debugger/). This could fail to happen for three reasons:
-   1. The LLM completed the provided task. Before each action, the LLM will evaluate if the user-specified task is complete, and shut itself down if so.
-   2. The user stopped the task's execution. The user can stop the LLM's execution at any time, without waiting for it to be completed.
-   3. There was an error. Web Agent's safety-first policy causes it to automatically stop execution in the event of an unexpected error.
-4. Once the action is complete and assuming that the task is not completed, Web Agent will cycle back to step 1 and parse the updated DOM. Web Agent can currently complete a maximum of 50 actions for a task, though in practice most tasks require fewer than 10 actions.
+   2. `setValue(id, text)` - focus on a text input, clear its existing text, and type the specified text into that input
+3. When Web Agent gets a completion from the LLM, it parses that response for an action to take. The action cycle will end at this stage if any of the following conditions are met:
+   1. The LLM believes the task is complete. Instead of an action, the LLM can return an indication that it believes the user's task is complete based on the state of the DOM and the action history up to this point.
+   2. The user stopped the task's execution. The user can stop the LLM's execution at any time, without waiting for it to complete.
+   3. There was an error. Web Agent's safety-first architecture causes it to automatically halt execution in the event of an unexpected error.
+4. Web Agent executes the action using the [chrome.debugger API](https://developer.chrome.com/docs/extensions/reference/debugger/).
+5. The action is added to the action history and Web Agent cycles back to step 1 and parses the updated DOM. All prior actions are sent to the LLM as part of the prompt used to determine the next action. Web Agent can currently complete a maximum of 50 actions for a single task, though in practice most tasks require fewer than 10 actions.
 
 ## Simple Demos
 
