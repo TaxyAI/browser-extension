@@ -9,15 +9,15 @@ Web Agent is a Chrome Extension that sends a simplified version of the browser's
 - [Web Agent Browser Extension](#web-agent-browser-extension)
   - [Table of Contents](#table-of-contents)
   - [How it Works](#how-it-works)
-  - [Tech Stack](#tech-stack)
-  - [Installing and Running](#installing-and-running)
-    - [Installing the extension](#installing-the-extension)
-    - [Running in your browser](#running-in-your-browser)
   - [Simple Demos](#simple-demos)
     - [Writing an essay in the OpenAI playground](#writing-an-essay-in-the-openai-playground)
     - [Creating a calendar event](#creating-a-calendar-event)
     - [Searching for and playing the movie Oblivion in Netflix](#searching-for-and-playing-the-movie-oblivion-in-netflix)
     - [Add your own!](#add-your-own)
+  - [Installing and Running](#installing-and-running)
+    - [Installing the extension](#installing-the-extension)
+    - [Running in your browser](#running-in-your-browser)
+  - [Tech Stack](#tech-stack)
   - [Resources:](#resources)
 
 ## How it Works
@@ -32,18 +32,23 @@ Web Agent is a Chrome Extension that sends a simplified version of the browser's
    3. There was an error. Web Agent's safety-first policy causes it to automatically stop execution in the event of an unexpected error.
 4. Once the action is complete and assuming that the task is not completed, Web Agent will cycle back to step 1 and parse the updated DOM. Web Agent can currently complete a maximum of 50 actions for a task, though in practice most tasks require fewer than 10 actions.
 
-## Tech Stack
+## Simple Demos
 
-Current technology used by this extension:
+### Writing an essay in the OpenAI playground
 
-- [Chrome Extension Manifest V3](https://developer.chrome.com/docs/extensions/mv3/intro/mv3-overview/)
-- [React 17](https://reactjs.org)
-- [Webpack 5](https://webpack.js.org/)
-- [Webpack Dev Server 4](https://webpack.js.org/configuration/dev-server/)
-- [React Hot Loader](https://github.com/gaearon/react-hot-loader)
-- [eslint-config-react-app](https://www.npmjs.com/package/eslint-config-react-app)
-- [Prettier](https://prettier.io/)
-- [TypeScript](https://www.typescriptlang.org/)
+![playground](https://user-images.githubusercontent.com/41524992/227739246-53cb4587-6fa1-491f-80fa-f05ec0b13967.gif)
+
+### Creating a calendar event
+
+![Calendar](https://user-images.githubusercontent.com/41524992/227739258-e4721e54-1f97-46e2-a50e-36580ef26bc7.gif)
+
+### Searching for and playing the movie Oblivion in Netflix
+
+![Oblivion](https://user-images.githubusercontent.com/41524992/227739533-9c8711b0-ed21-4b28-9099-823a0d2a4db2.gif)
+
+### Add your own!
+
+If you have an interesting demo you'd like to share, submit a PR to add your own!
 
 ## Installing and Running
 
@@ -69,23 +74,18 @@ Currently this extension is only available through the GitHub repo. We plan to r
 2. The next thing you need to do is create or access an existing [OpenAI API Key](https://platform.openai.com/account/api-keys) and paste it in the provided prompt. This key will be stored securely in your browser, not uploaded to any external server.
 3. Finally, navigate to a webpage you want Web Agent to act upon (for instance the [OpenAI playground](https://platform.openai.com/playground)) and start experimenting!
 
-## Simple Demos
+## Tech Stack
 
-### Writing an essay in the OpenAI playground
+Technology currently used by this extension:
 
-![playground](https://user-images.githubusercontent.com/41524992/227739246-53cb4587-6fa1-491f-80fa-f05ec0b13967.gif)
-
-### Creating a calendar event
-
-![Calendar](https://user-images.githubusercontent.com/41524992/227739258-e4721e54-1f97-46e2-a50e-36580ef26bc7.gif)
-
-### Searching for and playing the movie Oblivion in Netflix
-
-![Oblivion](https://user-images.githubusercontent.com/41524992/227739533-9c8711b0-ed21-4b28-9099-823a0d2a4db2.gif)
-
-### Add your own!
-
-If you have an interesting demo you'd like to share, submit a PR to add your own!
+- [Chrome Extension Manifest V3](https://developer.chrome.com/docs/extensions/mv3/intro/mv3-overview/)
+- [React 17](https://reactjs.org)
+- [Webpack 5](https://webpack.js.org/)
+- [Webpack Dev Server 4](https://webpack.js.org/configuration/dev-server/)
+- [React Hot Loader](https://github.com/gaearon/react-hot-loader)
+- [eslint-config-react-app](https://www.npmjs.com/package/eslint-config-react-app)
+- [Prettier](https://prettier.io/)
+- [TypeScript](https://www.typescriptlang.org/)
 
 ## Resources:
 
