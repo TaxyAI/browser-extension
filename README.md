@@ -18,7 +18,7 @@ Web Agent is a Chrome Extension that sends a simplified version of the browser's
     - [Installing the extension](#installing-the-extension)
     - [Running in your browser](#running-in-your-browser)
   - [Tech Stack](#tech-stack)
-  - [Resources:](#resources)
+  - [Resources](#resources)
 
 ## How it Works
 
@@ -87,6 +87,6 @@ Technology currently used by this extension:
 - [Prettier](https://prettier.io/)
 - [TypeScript](https://www.typescriptlang.org/)
 
-## Resources:
+## Resources
 
 - [Getting Started with Chrome Extensions](https://developer.chrome.com/extensions/getstarted)
