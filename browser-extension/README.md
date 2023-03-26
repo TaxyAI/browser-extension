@@ -10,8 +10,8 @@ Web Agent is a Chrome Extension that sends a simplified version of the browser's
 
 1. Web Agent runs a content script on the browser page to pull the entire DOM. It simplifies it to only include interactive or contextual elements, like text. It assigns an id to each interactive element.
 2. Web Agent sends the simplified DOM, along with the user's instructions, to the selected LLM (currently limited to GPT-3.5 and GPT-4). Web Agent informs the LLM of two potential actions to interact with the webpage:
-   1. click(id) - click on the interactive element associated with that id
-   2. setValue(id, text) - focus on a text input, clear its existing text, and type the provided text into that input
+   1. `click(id)` - click on the interactive element associated with that id
+   2. `setValue(id, text)` - focus on a text input, clear its existing text, and type the provided text into that input
 3. If possible, Web Agent parses the LLM's response for an action to complete, and then takes that action using the [chrome.debugger API](https://developer.chrome.com/docs/extensions/reference/debugger/). This could fail to happen for three reasons:
    1. The LLM completed the provided task. Before each action, the LLM will evaluate if the user-specified task is complete, and shut itself down if so.
    2. The user stopped the task's execution. The user can stop the LLM's execution at any time, without waiting for it to be completed.
