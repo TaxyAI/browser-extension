@@ -1,4 +1,4 @@
-<img src="browser-extension/src/assets/img/icon-128.png" width="64"/>
+<img src="src/assets/img/icon-128.png" width="64"/>
 
 # Web Agent Browser Extension
 
