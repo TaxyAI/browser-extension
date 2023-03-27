@@ -2,6 +2,7 @@ import getAnnotatedDOM, {
   getUniqueElementSelectorId,
 } from '../pages/Content/getAnnotatedDOM';
 import ripple from '../pages/Content/ripple';
+import { sleep } from './utils';
 
 export const rpcMethods = {
   getAnnotatedDOM,
@@ -29,12 +30,25 @@ export const callRPC = async <T extends MethodName>(
   }
 
   if (!activeTab?.id) throw new Error('No active tab found');
-  const response: MethodRT<T> = await chrome.tabs.sendMessage(activeTab.id, {
-    type,
-    payload: payload || [],
-  });
 
-  return response;
+  // try to send the message 3 times, waiting 1s between each try
+  for (let i = 0; i < 3; i++) {
+    try {
+      const response: MethodRT<T> = await chrome.tabs.sendMessage(
+        activeTab.id,
+        {
+          type,
+          payload: payload || [],
+        }
+      );
+      return response;
+    } catch (e) {
+      // Content script may not have loaded, retry twice
+      console.error(e);
+      await sleep(1000);
+    }
+  }
+  throw new Error('Failed to send message to content script');
 };
 
 const isKnownMethodName = (type: string): type is MethodName => {
