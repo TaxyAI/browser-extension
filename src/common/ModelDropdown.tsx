@@ -8,6 +8,12 @@ const ModelDropdown = () => {
     updateSettings: state.settings.actions.update,
   }));
 
+  const { openAIKey } = useAppState((state) => ({
+    openAIKey: state.settings.openAIKey,
+  }));
+
+  if (!openAIKey) return null;
+
   return (
     // Chakra UI Select component
     <Select

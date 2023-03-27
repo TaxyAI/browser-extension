@@ -24,7 +24,7 @@ const App = ({ showIntro }: { showIntro?: boolean }) => {
           />
 
           <Heading as="h1" size="lg" flex={1}>
-            Taxy AI
+            Taxy AI Alpha
           </Heading>
           <Box flex={1}>
             <ModelDropdown />

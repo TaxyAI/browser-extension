@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Taxy AI",
+  "name": "Taxy AI Alpha",
   "description": "A chrome extension that executes DOM actions to fulfill natural language commands on any website",
   "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },
