@@ -17,7 +17,6 @@ export default function RunTaskButton(props: { runTask: () => void }) {
       onClick={props.runTask}
       colorScheme="green"
       disabled={state.taskState === 'running' || !state.instructions}
-      mb={4}
     >
       Start Task
     </Button>
@@ -36,7 +35,7 @@ export default function RunTaskButton(props: { runTask: () => void }) {
   }
 
   return (
-    <HStack alignItems="center" mb={4}>
+    <HStack alignItems="center">
       {button}
       <Spacer />
       {state.taskState === 'running' && <Spinner color="blue.500" />}

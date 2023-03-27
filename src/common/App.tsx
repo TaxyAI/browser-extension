@@ -1,4 +1,4 @@
-import { Box, Text, ChakraProvider, Heading, HStack } from '@chakra-ui/react';
+import { Box, ChakraProvider, Heading, HStack } from '@chakra-ui/react';
 import React from 'react';
 import { useAppState } from '../state/store';
 import ModelDropdown from './ModelDropdown';
@@ -19,13 +19,6 @@ const App = ({ showIntro }: { showIntro?: boolean }) => {
             <ModelDropdown />
           </Box>
         </HStack>
-        {showIntro && (
-          <Text fontSize="lg" mb="4">
-            Taxy uses OpenAI's GPT-4 API to perform actions in your browser.
-            Try telling it to sign up for a newsletter, or to add an item to
-            your cart.
-          </Text>
-        )}
         {openAIKey ? <TaskUI /> : <SetKey />}
       </Box>
     </ChakraProvider>
