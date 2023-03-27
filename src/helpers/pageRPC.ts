@@ -18,7 +18,8 @@ type MethodRT<T extends MethodName> = ReturnType<RPCMethods[T]>;
 // Call this function from the content script
 export const callRPC = async <T extends MethodName>(
   type: keyof typeof rpcMethods,
-  payload?: Payload<T>
+  payload?: Payload<T>,
+  maxTries = 1
 ): Promise<MethodRT<T>> => {
   let queryOptions = { active: true, currentWindow: true };
   let activeTab = (await chrome.tabs.query(queryOptions))[0];
@@ -31,8 +32,8 @@ export const callRPC = async <T extends MethodName>(
 
   if (!activeTab?.id) throw new Error('No active tab found');
 
-  // try to send the message 3 times, waiting 1s between each try
-  for (let i = 0; i < 3; i++) {
+  let err: any;
+  for (let i = 0; i < maxTries; i++) {
     try {
       const response: MethodRT<T> = await chrome.tabs.sendMessage(
         activeTab.id,
@@ -43,12 +44,17 @@ export const callRPC = async <T extends MethodName>(
       );
       return response;
     } catch (e) {
-      // Content script may not have loaded, retry twice
-      console.error(e);
-      await sleep(1000);
+      if (i === maxTries - 1) {
+        // Last try, throw the error
+        err = e;
+      } else {
+        // Content script may not have loaded, retry
+        console.error(e);
+        await sleep(1000);
+      }
     }
   }
-  throw new Error('Failed to send message to content script');
+  throw err;
 };
 
 const isKnownMethodName = (type: string): type is MethodName => {
