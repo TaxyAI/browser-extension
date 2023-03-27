@@ -13,7 +13,7 @@ const App = ({ showIntro }: { showIntro?: boolean }) => {
       <Box p="8" fontSize="lg" w="full">
         <HStack mb={4} alignItems="center">
           <Heading as="h1" size="lg" flex={1}>
-            WebAgent
+            Taxy AI
           </Heading>
           <Box flex={1}>
             <ModelDropdown />
@@ -21,7 +21,7 @@ const App = ({ showIntro }: { showIntro?: boolean }) => {
         </HStack>
         {showIntro && (
           <Text fontSize="lg" mb="4">
-            WebAgent uses OpenAI's GPT-4 API to perform actions in your browser.
+            Taxy uses OpenAI's GPT-4 API to perform actions in your browser.
             Try telling it to sign up for a newsletter, or to add an item to
             your cart.
           </Text>

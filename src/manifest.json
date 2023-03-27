@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "_Web Agent",
-  "description": "A chrome extension to help you execute arbitrary javascript on any website based on natural text commands",
+  "name": "Taxy AI",
+  "description": "A chrome extension that executes DOM actions to fulfill natural language commands on any website",
   "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },
   "permissions": [

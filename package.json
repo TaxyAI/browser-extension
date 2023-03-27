@@ -1,11 +1,11 @@
 {
-  "name": "llm-web-agent",
+  "name": "taxy-ai-chrome-extension",
   "version": "0.0.1",
   "description": "Web agent to do your bidding online",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/llm-lol/web-agent.git"
+    "url": "https://github.com:TaxyAI/chrome-extension.git"
   },
   "scripts": {
     "build": "node utils/build.js",
