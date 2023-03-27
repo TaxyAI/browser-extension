@@ -9,7 +9,9 @@ Taxy's current status is **research preview**. Many workflows fail or confuse th
 
 Taxy is fully open-source, and we don't send any page contents or instructions to our servers.
 
-![Oblivion](https://user-images.githubusercontent.com/41524992/228063893-4bdf4716-93ee-4f51-8927-cb664880b457.gif)
+Watch Taxy figure out how to create an event on Google Calendar:
+
+![Calendar](https://user-images.githubusercontent.com/41524992/228064011-0ca3a39d-cebb-4a55-9e2b-6aa3ae5b3f43.gif)
 
 
 ## Table of Contents
