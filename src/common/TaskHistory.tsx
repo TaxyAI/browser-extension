@@ -86,7 +86,7 @@ export default function TaskHistory() {
   if (taskHistory.length === 0 && taskStatus !== 'running') return null;
 
   return (
-    <VStack mb="4">
+    <VStack mt={8}>
       <HStack w="full">
         <Heading as="h3" size="md">
           Action History
