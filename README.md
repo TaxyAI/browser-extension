@@ -9,7 +9,8 @@ Taxy's current status is **research preview**. Many workflows fail or confuse th
 
 Taxy is fully open-source, and we don't send any page contents or instructions to our servers.
 
-![Oblivion](https://user-images.githubusercontent.com/41524992/227739533-9c8711b0-ed21-4b28-9099-823a0d2a4db2.gif)
+![Oblivion](https://user-images.githubusercontent.com/41524992/228063893-4bdf4716-93ee-4f51-8927-cb664880b457.gif)
+
 
 ## Table of Contents
 
@@ -68,15 +69,15 @@ Currently this extension is only available through this GitHub repo. We'll relea
 
 ### Searching for and playing the movie Oblivion in Netflix
 
-![Oblivion](https://user-images.githubusercontent.com/41524992/227739533-9c8711b0-ed21-4b28-9099-823a0d2a4db2.gif)
+![Oblivion](https://user-images.githubusercontent.com/41524992/228063949-c26a4b54-92ae-4e22-8177-7e78c0d9a29b.gif)
 
 ### Creating a calendar event
 
-![Calendar](https://user-images.githubusercontent.com/41524992/227739258-e4721e54-1f97-46e2-a50e-36580ef26bc7.gif)
+![Calendar](https://user-images.githubusercontent.com/41524992/228064011-0ca3a39d-cebb-4a55-9e2b-6aa3ae5b3f43.gif)
 
 ### Writing an essay in the OpenAI playground
 
-![playground](https://user-images.githubusercontent.com/41524992/227739246-53cb4587-6fa1-491f-80fa-f05ec0b13967.gif)
+![Playground](https://user-images.githubusercontent.com/41524992/228064056-84eab4e4-b5b5-4e79-b1e3-be92f14d2607.gif)
 
 ### Add your own!
 
