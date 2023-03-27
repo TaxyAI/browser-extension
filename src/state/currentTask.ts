@@ -63,12 +63,13 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
                   'Failed to attach debugger:',
                   chrome.runtime.lastError.message
                 );
-                throw new Error(
-                  `Failed to attach debugger: ${chrome.runtime.lastError.message}`
+                reject(
+                  new Error(
+                    `Failed to attach debugger: ${chrome.runtime.lastError.message}`
+                  )
                 );
               } else {
                 console.log('attached to debugger');
-
                 await chrome.debugger.sendCommand({ tabId }, 'DOM.enable');
                 console.log('DOM enabled');
                 await chrome.debugger.sendCommand({ tabId }, 'Runtime.enable');
@@ -77,8 +78,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
               }
             });
           } catch (e) {
-            reject();
-            throw e;
+            reject(e);
           }
         });
 
