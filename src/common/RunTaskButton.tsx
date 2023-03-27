@@ -1,8 +1,8 @@
-import { ChatIcon } from '@chakra-ui/icons';
 import { Button, HStack, Icon, Spacer, Spinner } from '@chakra-ui/react';
 import React from 'react';
 import { useAppState } from '../state/store';
 import { BsPlayFill, BsStopFill } from 'react-icons/bs';
+import { debugMode } from '../constants';
 
 export default function RunTaskButton(props: { runTask: () => void }) {
   const state = useAppState((state) => ({
@@ -38,7 +38,9 @@ export default function RunTaskButton(props: { runTask: () => void }) {
     <HStack alignItems="center">
       {button}
       <Spacer />
-      {state.taskState === 'running' && <Spinner color="blue.500" />}
+      {debugMode && state.taskState === 'running' && (
+        <Spinner color="blue.500" />
+      )}
     </HStack>
   );
 }
