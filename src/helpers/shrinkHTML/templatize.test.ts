@@ -1,7 +1,5 @@
-import { template } from '@babel/core';
-import { expect, test } from '@jest/globals';
-import { tagsSelfClose } from './tagsSelfClose';
-import templatize, { findPotentialTemplates } from './templatize';
+import { test } from '@jest/globals';
+import templatize from './templatize';
 
 type TestCases = [string, string][];
 

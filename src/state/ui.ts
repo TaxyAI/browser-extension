@@ -6,7 +6,7 @@ export type UiSlice = {
     setInstructions: (instructions: string) => void;
   };
 };
-export const createUiSlice: MyStateCreator<UiSlice> = (set, get) => ({
+export const createUiSlice: MyStateCreator<UiSlice> = (set) => ({
   instructions: null,
   actions: {
     setInstructions: (instructions) => {

@@ -8,7 +8,6 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
-  Spinner,
   Spacer,
 } from '@chakra-ui/react';
 import React from 'react';
