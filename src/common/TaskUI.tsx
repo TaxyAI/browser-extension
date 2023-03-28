@@ -1,5 +1,6 @@
 import { HStack, Spacer, Textarea, useToast } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
+import { debugMode } from '../constants';
 import { useAppState } from '../state/store';
 import RunTaskButton from './RunTaskButton';
 import TaskHistory from './TaskHistory';
@@ -56,7 +57,7 @@ const TaskUI = () => {
       <HStack>
         <RunTaskButton runTask={runTask} />
         <Spacer />
-        <TaskStatus />
+        {debugMode && <TaskStatus />}
       </HStack>
       <TaskHistory />
       {/* <PageContext /> */}
