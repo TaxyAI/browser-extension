@@ -7,10 +7,7 @@ export type SettingsSlice = {
     update: (values: Partial<SettingsSlice>) => void;
   };
 };
-export const createSettingsSlice: MyStateCreator<SettingsSlice> = (
-  set,
-  get
-) => ({
+export const createSettingsSlice: MyStateCreator<SettingsSlice> = (set) => ({
   openAIKey: null,
   selectedModel: 'gpt-3.5-turbo',
   actions: {
