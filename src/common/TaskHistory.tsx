@@ -94,11 +94,6 @@ export default function TaskHistory() {
         <Spacer />
         <CopyButton text={JSON.stringify(taskHistory, null, 2)} />
       </HStack>
-      {taskHistory.length === 0 && (
-        <Box color="gray.600" fontSize="sm">
-          Waiting for response...
-        </Box>
-      )}
       <Accordion allowToggle allowMultiple w="full" pb="4">
         {taskHistory.map((entry, index) => (
           <TaskHistoryItem key={index} index={index} entry={entry} />

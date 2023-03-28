@@ -1,3 +1,4 @@
+import { attachDebugger, detachDebugger } from '../helpers/chromeDebugger';
 import { callDOMAction } from '../helpers/domActions';
 import extractAction, { ExtractedAction } from '../helpers/extractAction';
 import { performQuery } from '../helpers/performQuery';
@@ -17,6 +18,14 @@ export type CurrentTaskSlice = {
   instructions: string | null;
   history: TaskHistoryEntry[];
   status: 'idle' | 'running' | 'success' | 'error' | 'interrupted';
+  actionStatus:
+    | 'idle'
+    | 'attaching-debugger'
+    | 'pulling-dom'
+    | 'transforming-dom'
+    | 'performing-query'
+    | 'performing-action'
+    | 'waiting';
   actions: {
     runTask: (onError: (error: string) => void) => Promise<void>;
     interrupt: () => void;
@@ -30,9 +39,15 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
   instructions: null,
   history: [],
   status: 'idle',
+  actionStatus: 'idle',
   actions: {
     runTask: async (onError) => {
       const wasStopped = () => get().currentTask.status !== 'running';
+      const setActionStatus = (status: CurrentTaskSlice['actionStatus']) => {
+        set((state) => {
+          state.currentTask.actionStatus = status;
+        });
+      };
 
       const instructions = get().ui.instructions;
 
@@ -42,7 +57,9 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         state.currentTask.instructions = instructions;
         state.currentTask.history = [];
         state.currentTask.status = 'running';
+        state.currentTask.actionStatus = 'attaching-debugger';
       });
+
       try {
         let activeTab = (
           await chrome.tabs.query({ active: true, currentWindow: true })
@@ -54,43 +71,23 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           state.currentTask.tabId = tabId;
         });
 
-        // wrap in a promise so we can await the attach
-        await new Promise<void>((resolve, reject) => {
-          try {
-            chrome.debugger.attach({ tabId }, '1.2', async () => {
-              if (chrome.runtime.lastError) {
-                console.error(
-                  'Failed to attach debugger:',
-                  chrome.runtime.lastError.message
-                );
-                reject(
-                  new Error(
-                    `Failed to attach debugger: ${chrome.runtime.lastError.message}`
-                  )
-                );
-              } else {
-                console.log('attached to debugger');
-                await chrome.debugger.sendCommand({ tabId }, 'DOM.enable');
-                console.log('DOM enabled');
-                await chrome.debugger.sendCommand({ tabId }, 'Runtime.enable');
-                console.log('Runtime enabled');
-                resolve();
-              }
-            });
-          } catch (e) {
-            reject(e);
-          }
-        });
+        await attachDebugger(tabId);
 
         while (true) {
           if (wasStopped()) break;
 
-          const currentDom = templatize((await getSimplifiedDom()).outerHTML);
+          setActionStatus('pulling-dom');
+          const dom = (await getSimplifiedDom()).outerHTML;
+
+          if (wasStopped()) break;
+          setActionStatus('transforming-dom');
+          const currentDom = templatize(dom);
+
           const previousActions = get()
             .currentTask.history.map((entry) => entry.action)
             .filter(truthyFilter);
 
-          if (wasStopped()) break;
+          setActionStatus('performing-query');
 
           const { prompt, response } = await performQuery(
             instructions,
@@ -102,6 +99,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
 
           if (wasStopped()) break;
 
+          setActionStatus('performing-action');
           const action = extractAction(response);
 
           set((state) => {
@@ -123,7 +121,9 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           if (get().currentTask.history.length >= 50) {
             break;
           }
-          // sleep 2 seconds
+
+          setActionStatus('waiting');
+          // sleep 2 seconds. This is pretty arbitrary; we should figure out a better way to determine when the page has settled.
           await sleep(2000);
         }
         set((state) => {
@@ -135,15 +135,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           state.currentTask.status = 'error';
         });
       } finally {
-        // check if debugger is attached
-        const targets = await chrome.debugger.getTargets();
-        const isAttached = targets.some(
-          (target) =>
-            target.tabId === get().currentTask.tabId && target.attached
-        );
-        if (isAttached) {
-          chrome.debugger.detach({ tabId: get().currentTask.tabId });
-        }
+        await detachDebugger(get().currentTask.tabId);
       }
     },
     interrupt: () => {
