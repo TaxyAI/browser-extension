@@ -63,7 +63,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
       });
 
       try {
-        let activeTab = (
+        const activeTab = (
           await chrome.tabs.query({ active: true, currentWindow: true })
         )[0];
 
@@ -75,6 +75,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
 
         await attachDebugger(tabId);
 
+        // eslint-disable-next-line no-constant-condition
         while (true) {
           if (wasStopped()) break;
 

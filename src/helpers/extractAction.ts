@@ -1,17 +1,15 @@
-import { DOMActionPayload } from './domActions';
-
 type ExecutableAction =
   | {
       type: 'clickElement';
-      args: DOMActionPayload<'clickElement'>;
+      args: { id: number };
     }
   | {
       type: 'setValue';
-      args: DOMActionPayload<'setValue'>;
+      args: { id: number; value: string };
     }
   | {
       type: 'finish';
-      args: {};
+      args: unknown;
     };
 
 export type ExtractedAction = {

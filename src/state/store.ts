@@ -47,5 +47,5 @@ export const useAppState = create<StoreType>()(
   )
 );
 
-// @ts-ignore For debugging
+// @ts-expect-error used for debugging
 window.getState = useAppState.getState;

@@ -10,7 +10,7 @@ export async function getSimplifiedDom() {
 
   // Mount the DOM to the document in an iframe so we can use getComputedStyle
 
-  let interactiveElements: HTMLElement[] = [];
+  const interactiveElements: HTMLElement[] = [];
 
   const simplifiedDom = generateSimplifiedDom(
     dom.documentElement,

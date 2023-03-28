@@ -1,6 +1,6 @@
 // TypeScript function
 function scrollIntoViewFunction() {
-  // @ts-ignore
+  // @ts-expect-error this is run in the browser context
   this.scrollIntoView({
     block: 'center',
     inline: 'center',

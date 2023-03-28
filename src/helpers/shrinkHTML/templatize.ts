@@ -170,7 +170,7 @@ function createTemplateTree(
   node: JsonNode,
   templates: Record<string, OptimizedTemplate>,
   renderForTemplate: OptimizedTemplate,
-  currentValueIndex: number = 0
+  currentValueIndex = 0
 ): { template: string; valueIndex: number; consumedTemplates: string[] } {
   if (node.type === 'TEXT') {
     if (renderForTemplate.valuesToInline.has(currentValueIndex)) {
@@ -245,7 +245,7 @@ function serializeTree(
   }
 
   // Check if the node's templateHash matches one of the chosen templates
-  if (templates.hasOwnProperty(node.templateHash)) {
+  if (node.templateHash in templates) {
     const template = templates[node.templateHash];
 
     return `{${template.label}(${node.templateValues

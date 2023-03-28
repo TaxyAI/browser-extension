@@ -70,8 +70,7 @@ function traverseDOM(node: Node, pageElements: HTMLElement[]) {
 export default function getAnnotatedDOM() {
   currentElements = [];
   const result = traverseDOM(document.documentElement, currentElements);
-  // @ts-ignore
-  return result.clonedDOM.outerHTML;
+  return (result.clonedDOM as HTMLElement).outerHTML;
 }
 
 // idempotent function to get a unique id for an element

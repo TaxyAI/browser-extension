@@ -63,14 +63,11 @@ const isKnownMethodName = (type: string): type is MethodName => {
 
 // This function should run in the content script
 export const watchForRPCRequests = () => {
-  // @ts-ignore
-  window.rpc = rpcMethods;
-
   chrome.runtime.onMessage.addListener(
     (message, sender, sendResponse): true | undefined => {
       const type = message.type;
       if (isKnownMethodName(type)) {
-        // @ts-ignore
+        // @ts-expect-error we need to type payload
         const resp = rpcMethods[type](...message.payload);
         if (resp instanceof Promise) {
           resp.then((resolvedResp) => {

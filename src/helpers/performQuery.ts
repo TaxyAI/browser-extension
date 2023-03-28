@@ -27,7 +27,7 @@ export async function performQuery(
   taskInstructions: string,
   previousActions: ExtractedAction[],
   simplifiedDOM: string,
-  maxAttempts: number = 3,
+  maxAttempts = 3,
   notifyError?: (error: string) => void
 ) {
   const model = useAppState.getState().settings.selectedModel;

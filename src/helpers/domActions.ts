@@ -51,7 +51,7 @@ const delayBetweenKeystrokes = 100; // Set this value to control typing speed
 async function clickAtPosition(
   x: number,
   y: number,
-  clickCount: number = 1
+  clickCount = 1
 ): Promise<void> {
   callRPC('ripple', [x, y]);
   await sendCommand('Input.dispatchMouseEvent', {
@@ -178,7 +178,7 @@ export const callDOMAction = async <T extends ActionName>(
     });
   }
 
-  // @ts-ignore
+  // @ts-expect-error need to type payload
   await domActions[type](payload);
   console.log('DOM action complete');
 
