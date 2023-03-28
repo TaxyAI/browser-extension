@@ -22,7 +22,7 @@ type TaskHistoryItemProps = {
 
 const CollapsibleComponent = (props: {
   title: string;
-  subtitle: string | undefined;
+  subtitle?: string;
   text: string;
 }) => (
   <AccordionItem backgroundColor="white">
