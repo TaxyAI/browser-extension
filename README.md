@@ -50,7 +50,7 @@ Currently this extension is only available through this GitHub repo. We'll relea
 
 1. Once installed, the browser plugin will be available in two forms:
    1. As a Popup. Activate by pressing `cmd+shift+y` on mac or `ctrl+shift+y` on windows/linux, or by clicking the extension logo in your browser.
-   2. As a devtools panel. Activate by first opening the browser's developer tools, then navigating to the `Taxy` panel.
+   2. As a devtools panel. Activate by first opening the browser's developer tools, then navigating to the `Taxy AI` panel.
 2. The next thing you need to do is create or access an existing [OpenAI API Key](https://platform.openai.com/account/api-keys) and paste it in the provided box. This key will be stored securely in your browser, and will not be uploaded to a third party.
 3. Finally, navigate to a webpage you want Taxy to act upon (for instance the [OpenAI playground](https://platform.openai.com/playground)) and start experimenting!
 
