@@ -2,6 +2,7 @@ import { HStack, Spacer, Textarea, useToast } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import { debugMode } from '../constants';
 import { useAppState } from '../state/store';
+import PageContext from './PageContext';
 import RunTaskButton from './RunTaskButton';
 import TaskHistory from './TaskHistory';
 import TaskStatus from './TaskStatus';
@@ -60,7 +61,7 @@ const TaskUI = () => {
         {debugMode && <TaskStatus />}
       </HStack>
       <TaskHistory />
-      {/* <PageContext /> */}
+      {debugMode && <PageContext />}
     </>
   );
 };

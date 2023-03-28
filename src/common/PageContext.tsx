@@ -32,12 +32,11 @@ const PageContext = () => {
   );
 
   return (
-    <>
-      <Heading as="h3" size="md" mb="4">
+    <Box>
+      <Heading as="h3" size="md" my="4">
         Page Context
       </Heading>
-      <Accordion allowToggle allowMultiple>
-        {/* Templatized HTML */}
+      <Accordion allowMultiple>
         <AccordionItem>
           <Heading as="h2" size="md">
             <AccordionButton>
@@ -82,7 +81,7 @@ const PageContext = () => {
           </AccordionPanel>
         </AccordionItem>
       </Accordion>
-    </>
+    </Box>
   );
 };
 

@@ -135,61 +135,6 @@ export const callDOMAction = async <T extends ActionName>(
   type: keyof typeof domActions,
   payload: DOMActionPayload<T>
 ): Promise<void> => {
-  console.log('taking DOM action', type, payload);
-
-  const blacklistedExtensionIds = [
-    // Dashlane
-    'fdjamakpfbbddfjaooikfcpapjohcfmg',
-    // LastPass
-    'hdokiejnpimakedhajhdlcegeplioahd',
-  ];
-
-  const enabledBlacklistedExtensions = await new Promise<
-    chrome.management.ExtensionInfo[]
-  >((resolve, reject) => {
-    chrome.management.getAll((extensions) => {
-      if (chrome.runtime.lastError) {
-        console.error(
-          'Failed to get extensions:',
-          chrome.runtime.lastError.message
-        );
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(
-          extensions.filter(
-            (extension) =>
-              extension.type === 'extension' &&
-              extension.enabled &&
-              blacklistedExtensionIds.includes(extension.id)
-          )
-        );
-      }
-    });
-  });
-
-  for (const extension of enabledBlacklistedExtensions) {
-    chrome.management.setEnabled(extension.id, false, () => {
-      if (chrome.runtime.lastError) {
-        console.error(
-          `Failed to disable extension ${extension.id}:`,
-          chrome.runtime.lastError.message
-        );
-      }
-    });
-  }
-
   // @ts-expect-error need to type payload
   await domActions[type](payload);
-  console.log('DOM action complete');
-
-  for (const extension of enabledBlacklistedExtensions) {
-    chrome.management.setEnabled(extension.id, true, () => {
-      if (chrome.runtime.lastError) {
-        console.error(
-          `Failed to enable extension ${extension.id}:`,
-          chrome.runtime.lastError.message
-        );
-      }
-    });
-  }
 };

@@ -64,6 +64,7 @@ function generateSimplifiedDom(
     'placeholder',
     'value',
     'role',
+    'title',
   ];
 
   for (const attr of allowedAttributes) {

@@ -1,5 +1,9 @@
 import { CreateCompletionResponseUsage } from 'openai';
 import { attachDebugger, detachDebugger } from '../helpers/chromeDebugger';
+import {
+  disableIncompatibleExtensions,
+  reenableExtensions,
+} from '../helpers/disableExtensions';
 import { callDOMAction } from '../helpers/domActions';
 import extractAction, { ExtractedAction } from '../helpers/extractAction';
 import { performQuery } from '../helpers/performQuery';
@@ -74,6 +78,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         });
 
         await attachDebugger(tabId);
+        await disableIncompatibleExtensions();
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -151,6 +156,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         });
       } finally {
         await detachDebugger(get().currentTask.tabId);
+        await reenableExtensions();
       }
     },
     interrupt: () => {
