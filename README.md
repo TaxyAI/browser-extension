@@ -9,9 +9,9 @@ Taxy's current status is **research preview**. Many workflows fail or confuse th
 
 Taxy is fully open-source, and we don't send any page contents or instructions to our servers.
 
-Watch Taxy figure out how to create an event on Google Calendar:
+Here's Taxy using Google Calendar with the prompt "Schedule standup tomorrow at 10am. Invite david@taxy.ai"
 
-![Calendar](https://user-images.githubusercontent.com/41524992/228064011-0ca3a39d-cebb-4a55-9e2b-6aa3ae5b3f43.gif)
+![calendar](https://user-images.githubusercontent.com/176426/228092695-1bc11ea9-bfb7-470d-bbc6-0026e93c23c3.gif)
 
 
 ## Table of Contents
