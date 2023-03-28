@@ -1,4 +1,8 @@
-import { Configuration, OpenAIApi } from 'openai';
+import {
+  Configuration,
+  CreateCompletionResponseUsage,
+  OpenAIApi,
+} from 'openai';
 import { useAppState } from '../state/store';
 import { ExtractedAction } from './extractAction';
 
@@ -42,8 +46,6 @@ export async function performQuery(
 
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      // Log object to collapse it in the console
-      console.log('prompt', { prompt });
       const completion = await openai.createChatCompletion({
         model: model,
         messages: [
@@ -58,8 +60,8 @@ export async function performQuery(
         stop: ['</Action>'],
       });
 
-      console.log('completion', completion.data.choices[0]);
       return {
+        usage: completion.data.usage as CreateCompletionResponseUsage,
         prompt,
         response:
           completion.data.choices[0].message?.content?.trim() + '</Action>',

@@ -12,28 +12,31 @@ import {
   Spacer,
 } from '@chakra-ui/react';
 import React from 'react';
-import { ExtractedAction } from '../helpers/extractAction';
+import { TaskHistoryEntry } from '../state/currentTask';
 import { useAppState } from '../state/store';
 import CopyButton from './CopyButton';
-
-export type TaskHistoryEntry = {
-  prompt: string;
-  response: string;
-  action: ExtractedAction | null;
-};
 
 type TaskHistoryItemProps = {
   index: number;
   entry: TaskHistoryEntry;
 };
 
-const CollapsibleComponent = (props: { title: string; text: string }) => (
+const CollapsibleComponent = (props: {
+  title: string;
+  subtitle: string | undefined;
+  text: string;
+}) => (
   <AccordionItem backgroundColor="white">
     <Heading as="h4" size="xs">
       <AccordionButton>
         <HStack flex="1">
           <Box>{props.title}</Box>
-          <CopyButton text={props.text} />{' '}
+          <CopyButton text={props.text} /> <Spacer />
+          {props.subtitle && (
+            <Box as="span" fontSize="xs" color="gray.500" mr={4}>
+              {props.subtitle}
+            </Box>
+          )}
         </HStack>
         <AccordionIcon />
       </AccordionButton>
@@ -65,8 +68,16 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
       </Heading>
       <AccordionPanel backgroundColor="gray.100" p="2">
         <Accordion allowToggle allowMultiple w="full" defaultIndex={1}>
-          <CollapsibleComponent title="Prompt" text={entry.prompt} />
-          <CollapsibleComponent title="Response" text={entry.response} />
+          <CollapsibleComponent
+            title="Prompt"
+            subtitle={`${entry.usage.prompt_tokens} tokens`}
+            text={entry.prompt}
+          />
+          <CollapsibleComponent
+            title="Response"
+            subtitle={`${entry.usage.completion_tokens} tokens`}
+            text={entry.response}
+          />
           <CollapsibleComponent
             title="Action"
             text={JSON.stringify(entry.action, null, 2)}

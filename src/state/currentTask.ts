@@ -1,3 +1,4 @@
+import { CreateCompletionResponseUsage } from 'openai';
 import { attachDebugger, detachDebugger } from '../helpers/chromeDebugger';
 import { callDOMAction } from '../helpers/domActions';
 import extractAction, { ExtractedAction } from '../helpers/extractAction';
@@ -11,6 +12,7 @@ export type TaskHistoryEntry = {
   prompt: string;
   response: string;
   action: ExtractedAction | null;
+  usage: CreateCompletionResponseUsage;
 };
 
 export type CurrentTaskSlice = {
@@ -89,7 +91,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
 
           setActionStatus('performing-query');
 
-          const { prompt, response } = await performQuery(
+          const query = await performQuery(
             instructions,
             previousActions,
             currentDom,
@@ -97,13 +99,25 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             onError
           );
 
+          if (!query) {
+            set((state) => {
+              state.currentTask.status = 'error';
+            });
+            break;
+          }
+
           if (wasStopped()) break;
 
           setActionStatus('performing-action');
-          const action = extractAction(response);
+          const action = extractAction(query.response);
 
           set((state) => {
-            state.currentTask.history.push({ prompt, response, action });
+            state.currentTask.history.push({
+              prompt: query.prompt,
+              response: query.response,
+              action,
+              usage: query.usage,
+            });
           });
           if (action === null || action.executableAction.type === 'finish') {
             break;
