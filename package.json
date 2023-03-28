@@ -1,11 +1,11 @@
 {
-  "name": "taxy-ai-chrome-extension",
-  "version": "0.0.1",
+  "name": "taxy-ai-browser-extension",
+  "version": "1.1.0",
   "description": "Web agent to do your bidding online",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com:TaxyAI/chrome-extension.git"
+    "url": "https://github.com:TaxyAI/browser-extension.git"
   },
   "scripts": {
     "build": "node utils/build.js",
