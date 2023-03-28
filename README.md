@@ -23,6 +23,7 @@ Here's Taxy using Google Calendar with the prompt "Schedule standup tomorrow at 
     - [Running in your browser](#running-in-your-browser)
   - [How it Works - The Action Cycle](#how-it-works---the-action-cycle)
   - [Simple Demos](#simple-demos)
+    - [Protecting the main branch in GitHub](#protecting-the-main-branch-in-github)
     - [Searching for and playing the movie Oblivion in Netflix](#searching-for-and-playing-the-movie-oblivion-in-netflix)
     - [Creating a calendar event](#creating-a-calendar-event)
     - [Writing an essay in the OpenAI playground](#writing-an-essay-in-the-openai-playground)
@@ -68,6 +69,10 @@ Currently this extension is only available through this GitHub repo. We'll relea
 5. The action is added to the action history and Taxy cycles back to step 1 and parses the updated DOM. All prior actions are sent to the LLM as part of the prompt used to determine the next action. Taxy can currently complete a maximum of 50 actions for a single task, though in practice most tasks require fewer than 10 actions.
 
 ## Simple Demos
+
+### Protecting the main branch in GitHub
+
+![main-branch](https://user-images.githubusercontent.com/41524992/228385404-175bf633-de1d-43eb-862c-2cfd5a7a674a.gif)
 
 ### Searching for and playing the movie Oblivion in Netflix
 
