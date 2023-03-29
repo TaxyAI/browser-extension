@@ -20,7 +20,7 @@ import TokenCount from './TokenCount';
 
 const PageContext = () => {
   const simplifiedHTML =
-    useAsync(async () => (await getSimplifiedDom()).outerHTML, []).value ?? '';
+    useAsync(async () => (await getSimplifiedDom())?.outerHTML, []).value ?? '';
   const templatizedHTML = useMemo(() => {
     if (!simplifiedHTML) return '';
     return templatize(simplifiedHTML);

@@ -38,13 +38,10 @@ export const callRPC = async <T extends MethodName>(
   let err: any;
   for (let i = 0; i < maxTries; i++) {
     try {
-      const response: MethodRT<T> = await chrome.tabs.sendMessage(
-        activeTab.id,
-        {
-          type,
-          payload: payload || [],
-        }
-      );
+      const response = await chrome.tabs.sendMessage(activeTab.id, {
+        type,
+        payload: payload || [],
+      });
       return response;
     } catch (e) {
       if (i === maxTries - 1) {

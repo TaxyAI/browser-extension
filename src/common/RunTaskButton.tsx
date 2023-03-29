@@ -1,4 +1,4 @@
-import { Button, HStack, Icon, Spacer, Spinner } from '@chakra-ui/react';
+import { Button, HStack, Icon } from '@chakra-ui/react';
 import React from 'react';
 import { useAppState } from '../state/store';
 import { BsPlayFill, BsStopFill } from 'react-icons/bs';
@@ -33,9 +33,5 @@ export default function RunTaskButton(props: { runTask: () => void }) {
     );
   }
 
-  return (
-    <HStack alignItems="center">
-      {button}
-    </HStack>
-  );
+  return <HStack alignItems="center">{button}</HStack>;
 }

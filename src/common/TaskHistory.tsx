@@ -9,6 +9,8 @@ import {
   AccordionPanel,
   AccordionIcon,
   Spacer,
+  ColorProps,
+  BackgroundProps,
 } from '@chakra-ui/react';
 import React from 'react';
 import { TaskHistoryEntry } from '../state/currentTask';
@@ -52,15 +54,40 @@ const CollapsibleComponent = (props: {
 );
 
 const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
+  let itemTitle = '';
+  if ('error' in entry.action) {
+    itemTitle = `Error: ${entry.action.error}`;
+  } else if (entry.action?.thought) {
+    itemTitle = entry.action.thought;
+  }
+
+  const colors: {
+    text: ColorProps['textColor'];
+    bg: BackgroundProps['bgColor'];
+  } = {
+    text: undefined,
+    bg: undefined,
+  };
+  if ('error' in entry.action || entry.action.parsedAction.name === 'fail') {
+    colors.text = 'red.800';
+    colors.bg = 'red.100';
+  } else if (
+    'parsedAction' in entry.action &&
+    entry.action.parsedAction.name === 'finish'
+  ) {
+    colors.text = 'green.800';
+    colors.bg = 'green.100';
+  }
+
   return (
     <AccordionItem>
-      <Heading as="h3" size="sm">
+      <Heading as="h3" size="sm" textColor={colors.text} bgColor={colors.bg}>
         <AccordionButton>
           <Box mr="4" fontWeight="bold">
             {index + 1}.
           </Box>
           <Box as="span" textAlign="left" flex="1">
-            {entry.action?.thought || 'Task Complete!'}
+            {itemTitle}
           </Box>
           <AccordionIcon />
         </AccordionButton>

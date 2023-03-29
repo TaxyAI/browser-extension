@@ -5,6 +5,7 @@ import { truthyFilter } from './utils';
 
 export async function getSimplifiedDom() {
   const fullDom = await callRPC('getAnnotatedDOM', [], 3);
+  if (!fullDom) return null;
 
   const dom = new DOMParser().parseFromString(fullDom, 'text/html');
 

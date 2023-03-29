@@ -1,4 +1,4 @@
-import { WEBAGENT_ELEMENT_SELECTOR } from '../constants';
+import { TAXY_ELEMENT_SELECTOR } from '../constants';
 import { useAppState } from '../state/store';
 import { callRPC } from './pageRPC';
 import { scrollScriptString } from './runtimeFunctionStrings';
@@ -15,7 +15,7 @@ async function getObjectId(originalId: number) {
   const document = (await sendCommand('DOM.getDocument')) as any;
   const { nodeId } = (await sendCommand('DOM.querySelector', {
     nodeId: document.root.nodeId,
-    selector: `[${WEBAGENT_ELEMENT_SELECTOR}="${uniqueId}"]`,
+    selector: `[${TAXY_ELEMENT_SELECTOR}="${uniqueId}"]`,
   })) as any;
   if (!nodeId) {
     throw new Error('Could not find node');
@@ -71,8 +71,8 @@ async function clickAtPosition(
   await sleep(delayBetweenClicks);
 }
 
-async function clickElement(payload: { id: number }) {
-  const objectId = await getObjectId(payload.id);
+async function click(payload: { elementId: number }) {
+  const objectId = await getObjectId(payload.elementId);
   await scrollIntoView(objectId);
   const { x, y } = await getCenterCoordinates(objectId);
   await clickAtPosition(x, y);
@@ -108,8 +108,11 @@ async function blurFocusedElement() {
   });
 }
 
-async function setValue(payload: { id: number; value: string }): Promise<void> {
-  const objectId = await getObjectId(payload.id);
+async function setValue(payload: {
+  elementId: number;
+  value: string;
+}): Promise<void> {
+  const objectId = await getObjectId(payload.elementId);
   await scrollIntoView(objectId);
   const { x, y } = await getCenterCoordinates(objectId);
 
@@ -120,21 +123,19 @@ async function setValue(payload: { id: number; value: string }): Promise<void> {
 }
 
 export const domActions = {
-  clickElement,
+  click,
   setValue,
 } as const;
 
 export type DOMActions = typeof domActions;
 type ActionName = keyof DOMActions;
-export type DOMActionPayload<T extends ActionName> = Parameters<
-  DOMActions[T]
->[1];
+type ActionPayload<T extends ActionName> = Parameters<DOMActions[T]>[0];
 
 // Call this function from the content script
 export const callDOMAction = async <T extends ActionName>(
-  type: keyof typeof domActions,
-  payload: DOMActionPayload<T>
+  type: T,
+  payload: ActionPayload<T>
 ): Promise<void> => {
-  // @ts-expect-error need to type payload
+  // @ts-expect-error - we know that the type is valid
   await domActions[type](payload);
 };

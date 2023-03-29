@@ -4,28 +4,37 @@ import {
   OpenAIApi,
 } from 'openai';
 import { useAppState } from '../state/store';
-import { ExtractedAction } from './extractAction';
+import { availableActions } from './availableActions';
+import { ParsedResponseSuccess } from './parseResponse';
+
+const formattedActions = availableActions
+  .map((action, i) => {
+    const args = action.args
+      .map((arg) => `${arg.name}: ${arg.type}`)
+      .join(', ');
+    return `${i + 1}. ${action.name}(${args}): ${action.description}`;
+  })
+  .join('\n');
 
 const systemMessage = `
 You are a browser automation assistant.
 
 You can use the following tools:
 
-1. click(elementId: number): clicks on an element
-2. setValue(elementId: number, value: string): focuses on and sets the value of an input element
-3. finish(): indicates the task is finished
-4. fail(): indicates that you are unable to complete the task
+${formattedActions}
 
 You will be be given a task to perform and the current state of the DOM. You will also be given previous actions that you have taken. You may retry a failed action up to one time.
 
 This is an example of an action:
 
 <Thought>I should click the add to cart button</Thought>
-<Action>click(223)</Action>`;
+<Action>click(223)</Action>
+
+You must always include the <Thought> and <Action> open/close tags or else your response will be marked as invalid.`;
 
 export async function performQuery(
   taskInstructions: string,
-  previousActions: ExtractedAction[],
+  previousActions: ParsedResponseSuccess[],
   simplifiedDOM: string,
   maxAttempts = 3,
   notifyError?: (error: string) => void
@@ -86,7 +95,7 @@ export async function performQuery(
 
 export function formatPrompt(
   taskInstructions: string,
-  previousActions: ExtractedAction[],
+  previousActions: ParsedResponseSuccess[],
   pageContents: string
 ) {
   let previousActionsString = '';

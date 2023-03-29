@@ -5,7 +5,11 @@ import {
   reenableExtensions,
 } from '../helpers/disableExtensions';
 import { callDOMAction } from '../helpers/domActions';
-import extractAction, { ExtractedAction } from '../helpers/extractAction';
+import {
+  ParsedResponse,
+  ParsedResponseSuccess,
+  parseResponse,
+} from '../helpers/parseResponse';
 import { performQuery } from '../helpers/performQuery';
 import templatize from '../helpers/shrinkHTML/templatize';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
@@ -15,7 +19,7 @@ import { MyStateCreator } from './store';
 export type TaskHistoryEntry = {
   prompt: string;
   response: string;
-  action: ExtractedAction | null;
+  action: ParsedResponse;
   usage: CreateCompletionResponseUsage;
 };
 
@@ -85,11 +89,18 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           if (wasStopped()) break;
 
           setActionStatus('pulling-dom');
-          const dom = (await getSimplifiedDom()).outerHTML;
+          const pageDOM = await getSimplifiedDom();
+          if (!pageDOM) {
+            set((state) => {
+              state.currentTask.status = 'error';
+            });
+            break;
+          }
+          const html = pageDOM.outerHTML;
 
           if (wasStopped()) break;
           setActionStatus('transforming-dom');
-          const currentDom = templatize(dom);
+          const currentDom = templatize(html);
 
           const previousActions = get()
             .currentTask.history.map((entry) => entry.action)
@@ -99,7 +110,9 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
 
           const query = await performQuery(
             instructions,
-            previousActions,
+            previousActions.filter(
+              (pa) => !('error' in pa)
+            ) as ParsedResponseSuccess[],
             currentDom,
             3,
             onError
@@ -115,7 +128,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           if (wasStopped()) break;
 
           setActionStatus('performing-action');
-          const action = extractAction(query.response);
+          const action = parseResponse(query.response);
 
           set((state) => {
             state.currentTask.history.push({
@@ -125,14 +138,26 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
               usage: query.usage,
             });
           });
-          if (action === null || action.executableAction.type === 'finish') {
+          if ('error' in action) {
+            onError(action.error);
+            break;
+          }
+          if (
+            action === null ||
+            action.parsedAction.name === 'finish' ||
+            action.parsedAction.name === 'fail'
+          ) {
             break;
           }
 
-          await callDOMAction(
-            action?.executableAction.type,
-            action?.executableAction.args
-          );
+          if (action.parsedAction.name === 'click') {
+            await callDOMAction('click', action.parsedAction.args);
+          } else if (action.parsedAction.name === 'setValue') {
+            await callDOMAction(
+              action?.parsedAction.name,
+              action?.parsedAction.args
+            );
+          }
 
           if (wasStopped()) break;
 

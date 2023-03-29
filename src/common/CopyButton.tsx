@@ -14,7 +14,7 @@ export default function CopyButton(props: { text: string }) {
       onClick={async (event) => {
         try {
           event.preventDefault();
-          await callRPC('copyToClipboard', [props.text])
+          await callRPC('copyToClipboard', [props.text]);
           toast({
             title: 'Copied to clipboard',
             status: 'success',
