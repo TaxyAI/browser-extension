@@ -4,6 +4,7 @@ import { useAppState } from '../state/store';
 import ModelDropdown from './ModelDropdown';
 import SetKey from './SetKey';
 import TaskUI from './TaskUI';
+import OptionsDropdown from './OptionsDropdown';
 // import logo from '../assets/img/logo.svg';
 // import logo from '../assets/img/logo.svg';
 import logo from '../assets/img/icon-128.png';
@@ -26,9 +27,10 @@ const App = ({ showIntro }: { showIntro?: boolean }) => {
           <Heading as="h1" size="lg" flex={1}>
             Taxy AI
           </Heading>
-          <Box>
+          <HStack spacing={2}>
             <ModelDropdown />
-          </Box>
+            <OptionsDropdown />
+          </HStack>
         </HStack>
         {openAIKey ? <TaskUI /> : <SetKey />}
       </Box>
