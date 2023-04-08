@@ -4,14 +4,13 @@ var webpack = require('webpack'),
   env = require('./utils/env'),
   CopyWebpackPlugin = require('copy-webpack-plugin'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
-  TerserPlugin = require('terser-webpack-plugin');
+  TerserPlugin = require('terser-webpack-plugin'),
+  Dotenv = require('dotenv-webpack');
 var { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
-var alias = {
-  'react-dom': '@hot-loader/react-dom',
-};
+var alias = {};
 
 // load the secrets
 var secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js');
@@ -40,7 +39,7 @@ var options = {
     options: path.join(__dirname, 'src', 'pages', 'Options', 'index.jsx'),
     popup: path.join(__dirname, 'src', 'pages', 'Popup', 'index.jsx'),
     background: path.join(__dirname, 'src', 'pages', 'Background', 'index.js'),
-    contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
+    contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.ts'),
     devtools: path.join(__dirname, 'src', 'pages', 'Devtools', 'index.js'),
     panel: path.join(__dirname, 'src', 'pages', 'Panel', 'index.jsx'),
   },
@@ -88,9 +87,9 @@ var options = {
         loader: 'html-loader',
         exclude: /node_modules/,
       },
-      { test: /\.(ts|tsx)$/, loader: 'ts-loader', exclude: /node_modules/ },
+      // { test: /\.(ts|tsx)$/, loader: 'babel-loader', exclude: /node_modules/ },
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(js|jsx|ts|tsx)$/,
         use: [
           {
             loader: 'source-map-loader',
@@ -190,9 +189,13 @@ var options = {
       chunks: ['panel'],
       cache: false,
     }),
+    new Dotenv({ path: path.resolve(__dirname, '.env') }),
   ],
   infrastructureLogging: {
     level: 'info',
+  },
+  experiments: {
+    asyncWebAssembly: true,
   },
 };
 

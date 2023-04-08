@@ -1,15 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "Chrome Extension with React & Webpack",
-  "description": "A chrome extension boilerplate built with React 17, Webpack 5, and Webpack Dev Server 4",
+  "name": "Taxy AI Alpha",
+  "description": "A chrome extension that executes DOM actions to fulfill natural language commands on any website",
+  "version": "1.1.0",
   "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "storage",
+    "clipboardWrite",
+    "debugger",
+    "management"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icon-34.png"
-  },
-  "chrome_url_overrides": {
-    "newtab": "newtab.html"
   },
   "icons": {
     "128": "icon-128.png"
@@ -27,5 +33,13 @@
       "resources": ["content.styles.css", "icon-128.png", "icon-34.png"],
       "matches": []
     }
-  ]
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      }
+    }
+  }
 }
