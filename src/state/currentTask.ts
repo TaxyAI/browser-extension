@@ -14,6 +14,10 @@ import { CallbackManager } from 'langchain/callbacks';
 import { LLMResult } from 'langchain/schema';
 import { useAppState } from '../state/store';
 import { ChatConversationalAgent } from '../helpers/chatConversationalAgent';
+import { Document } from 'langchain/document';
+import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
+import { MemoryVectorStore } from 'langchain/vectorstores/memory';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 
 type ParsedResponse =
   | {
@@ -207,6 +211,27 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           const html = pageDOM.outerHTML;
           const domText = templatize(html);
 
+          const textSplitter = new RecursiveCharacterTextSplitter({
+            chunkSize: 2000,
+            chunkOverlap: 200,
+          });
+          const texts = await textSplitter.splitText(domText);
+
+          const docs = texts.map(
+            (pageContent: string) =>
+              new Document({
+                pageContent,
+                metadata: [],
+              })
+          );
+
+          const vectorStore = await MemoryVectorStore.fromDocuments(
+            docs,
+            new OpenAIEmbeddings({ openAIApiKey })
+          );
+          const results = await vectorStore.similaritySearch(instructions, 4);
+          const context = results.map((res) => res.pageContent).join('\n');
+
           const interval = setInterval(() => {
             if (wasStopped()) {
               // hack to stop agent, just give it no more iterations
@@ -218,7 +243,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           setActionStatus('performing-action');
           const result = await executor.call({
             input: instructions,
-            domText,
+            domText: context,
           });
           clearInterval(interval);
           result.output;
