@@ -6,6 +6,13 @@ import { sleep } from './utils';
 
 async function sendCommand(method: string, params?: any) {
   const tabId = useAppState.getState().currentTask.tabId;
+  console.log(
+    `chrome.debugger.sendCommand ${JSON.stringify(
+      tabId,
+      null,
+      2
+    )} ${JSON.stringify(method, null, 2)} ${JSON.stringify(params, null, 2)}`
+  );
   return chrome.debugger.sendCommand({ tabId }, method, params);
 }
 
@@ -71,7 +78,7 @@ async function clickAtPosition(
   await sleep(delayBetweenClicks);
 }
 
-async function click(payload: { elementId: number }) {
+export async function click(payload: { elementId: number }) {
   const objectId = await getObjectId(payload.elementId);
   await scrollIntoView(objectId);
   const { x, y } = await getCenterCoordinates(objectId);
@@ -108,7 +115,7 @@ async function blurFocusedElement() {
   });
 }
 
-async function setValue(payload: {
+export async function setValue(payload: {
   elementId: number;
   value: string;
 }): Promise<void> {

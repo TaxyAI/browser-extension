@@ -1,26 +1,32 @@
-import { CreateCompletionResponseUsage } from 'openai';
 import { attachDebugger, detachDebugger } from '../helpers/chromeDebugger';
 import {
   disableIncompatibleExtensions,
   reenableExtensions,
 } from '../helpers/disableExtensions';
-import { callDOMAction } from '../helpers/domActions';
-import {
-  ParsedResponse,
-  ParsedResponseSuccess,
-  parseResponse,
-} from '../helpers/parseResponse';
-import { determineNextAction } from '../helpers/determineNextAction';
+import { setValue, click } from '../helpers/domActions';
 import templatize from '../helpers/shrinkHTML/templatize';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
-import { sleep, truthyFilter } from '../helpers/utils';
 import { MyStateCreator } from './store';
+import { ChatOpenAI } from 'langchain/chat_models/openai';
+import { DynamicTool } from 'langchain/tools';
+import { AgentExecutor } from 'langchain/agents';
+import { CallbackManager } from 'langchain/callbacks';
+import { LLMResult } from 'langchain/schema';
+import { useAppState } from '../state/store';
+import { ChatConversationalAgent } from '../helpers/chatConversationalAgent';
+
+type ParsedResponse =
+  | {
+      thought: string;
+      tool: string;
+      input: string;
+    }
+  | {
+      error: string;
+    };
 
 export type TaskHistoryEntry = {
-  prompt: string;
-  response: string;
   action: ParsedResponse;
-  usage: CreateCompletionResponseUsage;
 };
 
 export type CurrentTaskSlice = {
@@ -70,6 +76,113 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         state.currentTask.actionStatus = 'attaching-debugger';
       });
 
+      const callbackManager = CallbackManager.fromHandlers({
+        async handleLLMStart(_llm: { name: string }, prompts: string[]) {
+          console.log(JSON.stringify(prompts, null, 2));
+        },
+        async handleLLMEnd(output: LLMResult) {
+          for (const generation of output.generations) {
+            for (const gen of generation) {
+              console.log(gen.text);
+            }
+          }
+
+          // todo i should get access to executor.agent.outputparser instead
+          let text = output.generations[0][0].text.trim();
+          // not very consistent using syntax highlighting
+          text = text.includes('```json')
+            ? text.split('```json')[1]
+            : text.split('```')[1];
+          text = text.split('```')[0].trim();
+          const action = JSON.parse(text);
+
+          set((state) => {
+            state.currentTask.history.push({
+              action,
+            });
+          });
+        },
+      });
+
+      const controller = new AbortController();
+
+      const openAIApiKey = useAppState.getState().settings.openAIKey || '';
+      const modelName = useAppState.getState().settings.selectedModel;
+      const model = new ChatOpenAI(
+        {
+          temperature: 0,
+          modelName,
+          openAIApiKey,
+          callbackManager,
+        },
+        { baseOptions: { signal: controller.signal } }
+      );
+      const tools = [
+        new DynamicTool({
+          name: 'click',
+          description:
+            'focuses on and sets the value of an input element. input is "elementId")',
+          func: async (inputs) => {
+            console.log('click', inputs);
+            const [elementIdString, _tabId] = inputs.split(',').map((input) => {
+              let t = input.trim();
+              t = t.startsWith('"') ? t.slice(1) : t;
+              t = t.endsWith('"') ? t.slice(0, -1) : t;
+              return t.trim();
+            });
+
+            const elementId = parseInt(elementIdString);
+            if (isNaN(elementId)) {
+              return 'elementId was not a number';
+            }
+            try {
+              await click({ elementId });
+              return 'clicked';
+            } catch (e) {
+              if (e) {
+                return e.toString();
+              }
+              return 'click failed for unknown reason';
+            }
+          },
+        }),
+        new DynamicTool({
+          name: 'setValue',
+          description:
+            'focuses on and sets the value of an input element. input is "elementId","value")',
+          func: async (inputs) => {
+            console.log('setValue', inputs);
+            const [elementIdString, value, _tabId] = inputs
+              .split(',')
+              .map((input) => {
+                let t = input.trim();
+                t = t.startsWith('"') ? t.slice(1) : t;
+                t = t.endsWith('"') ? t.slice(0, -1) : t;
+                return t.trim();
+              });
+
+            const elementId = parseInt(elementIdString);
+            if (isNaN(elementId)) {
+              return 'elementId was not a number';
+            }
+            try {
+              await setValue({ elementId, value });
+              return 'value set';
+            } catch (e) {
+              if (e) {
+                return e.toString();
+              }
+              return 'setValue failed for unknown reason';
+            }
+          },
+        }),
+      ];
+
+      const executor = AgentExecutor.fromAgentAndTools({
+        agent: ChatConversationalAgent.fromLLMAndTools(model, tools),
+        tools,
+      });
+
       try {
         const activeTab = (
           await chrome.tabs.query({ active: true, currentWindow: true })
@@ -84,96 +197,36 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         await attachDebugger(tabId);
         await disableIncompatibleExtensions();
 
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-          if (wasStopped()) break;
+        const pageDOM = await getSimplifiedDom();
 
-          setActionStatus('pulling-dom');
-          const pageDOM = await getSimplifiedDom();
-          if (!pageDOM) {
-            set((state) => {
-              state.currentTask.status = 'error';
-            });
-            break;
-          }
+        if (!pageDOM) {
+          set((state) => {
+            state.currentTask.status = 'error';
+          });
+        } else {
           const html = pageDOM.outerHTML;
+          const domText = templatize(html);
 
-          if (wasStopped()) break;
-          setActionStatus('transforming-dom');
-          const currentDom = templatize(html);
-
-          const previousActions = get()
-            .currentTask.history.map((entry) => entry.action)
-            .filter(truthyFilter);
-
-          setActionStatus('performing-query');
-
-          const query = await determineNextAction(
-            instructions,
-            previousActions.filter(
-              (pa) => !('error' in pa)
-            ) as ParsedResponseSuccess[],
-            currentDom,
-            3,
-            onError
-          );
-
-          if (!query) {
-            set((state) => {
-              state.currentTask.status = 'error';
-            });
-            break;
-          }
-
-          if (wasStopped()) break;
-
+          const interval = setInterval(() => {
+            if (wasStopped()) {
+              // hack to stop agent, just give it no more iterations
+              executor.maxIterations = 0;
+              // stop the existing call
+              controller.abort();
+            }
+          }, 500);
           setActionStatus('performing-action');
-          const action = parseResponse(query.response);
+          const result = await executor.call({
+            input: instructions,
+            domText,
+          });
+          clearInterval(interval);
+          result.output;
 
           set((state) => {
-            state.currentTask.history.push({
-              prompt: query.prompt,
-              response: query.response,
-              action,
-              usage: query.usage,
-            });
+            state.currentTask.status = 'success';
           });
-          if ('error' in action) {
-            onError(action.error);
-            break;
-          }
-          if (
-            action === null ||
-            action.parsedAction.name === 'finish' ||
-            action.parsedAction.name === 'fail'
-          ) {
-            break;
-          }
-
-          if (action.parsedAction.name === 'click') {
-            await callDOMAction('click', action.parsedAction.args);
-          } else if (action.parsedAction.name === 'setValue') {
-            await callDOMAction(
-              action?.parsedAction.name,
-              action?.parsedAction.args
-            );
-          }
-
-          if (wasStopped()) break;
-
-          // While testing let's automatically stop after 50 actions to avoid
-          // infinite loops
-          if (get().currentTask.history.length >= 50) {
-            break;
-          }
-
-          setActionStatus('waiting');
-          // sleep 2 seconds. This is pretty arbitrary; we should figure out a better way to determine when the page has settled.
-          await sleep(2000);
         }
-        set((state) => {
-          state.currentTask.status = 'success';
-        });
       } catch (e: any) {
         onError(e.message);
         set((state) => {

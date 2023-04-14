@@ -27,6 +27,7 @@
     "eslint-plugin-unused-imports": "^2.0.0",
     "framer-motion": "^8.4.3",
     "immer": "^9.0.21",
+    "langchain": "^0.0.55",
     "lodash": "^4.17.21",
     "openai": "^3.2.1",
     "prettier": "^2.8.4",

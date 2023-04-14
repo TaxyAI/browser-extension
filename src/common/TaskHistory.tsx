@@ -68,12 +68,12 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
     text: undefined,
     bg: undefined,
   };
-  if ('error' in entry.action || entry.action.parsedAction.name === 'fail') {
+  if ('error' in entry.action || entry.action.tool === 'fail') {
     colors.text = 'red.800';
     colors.bg = 'red.100';
   } else if (
     'parsedAction' in entry.action &&
-    entry.action.parsedAction.name === 'finish'
+    entry.action.tool === 'finished'
   ) {
     colors.text = 'green.800';
     colors.bg = 'green.100';
@@ -94,16 +94,6 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
       </Heading>
       <AccordionPanel backgroundColor="gray.100" p="2">
         <Accordion allowMultiple w="full" defaultIndex={1}>
-          <CollapsibleComponent
-            title="Prompt"
-            subtitle={`${entry.usage.prompt_tokens} tokens`}
-            text={entry.prompt}
-          />
-          <CollapsibleComponent
-            title="Response"
-            subtitle={`${entry.usage.completion_tokens} tokens`}
-            text={entry.response}
-          />
           <CollapsibleComponent
             title="Action"
             text={JSON.stringify(entry.action, null, 2)}
