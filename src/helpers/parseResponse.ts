@@ -9,8 +9,8 @@ export type ParsedResponseSuccess = {
 export type ParsedResponse =
   | ParsedResponseSuccess
   | {
-      error: string;
-    };
+    error: string;
+  };
 
 export function parseResponse(text: string): ParsedResponse {
   const thoughtMatch = text.match(/<Thought>(.*?)<\/Thought>/);
@@ -81,7 +81,7 @@ export function parseResponse(text: string): ParsedResponse {
       parsedArgs[expectedArg.name] = numberValue;
     } else if (expectedArg.type === 'string') {
       const stringValue =
-        arg.startsWith('"') && arg.endsWith('"') ? arg.slice(1, -1) : null;
+        (arg.startsWith('"') && arg.endsWith('"')) || (arg.startsWith("'") && arg.endsWith("'")) || (arg.startsWith("`") && arg.endsWith("`")) ? arg.slice(1, -1) : null;
 
       if (stringValue === null) {
         return {
