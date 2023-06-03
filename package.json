@@ -15,6 +15,7 @@
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^1.10.4",
     "@chakra-ui/icons": "^2.0.16",
     "@chakra-ui/react": "^2.4.8",
     "@emotion/react": "^11.10.5",
@@ -37,6 +38,7 @@
     "react-syntax-highlighter": "^15.5.0",
     "react-textarea-autosize": "^8.4.1",
     "react-use": "^17.4.0",
+    "uuid": "^9.0.0",
     "zustand": "^4.3.6"
   },
   "devDependencies": {
