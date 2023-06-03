@@ -71,7 +71,9 @@ var options = {
               sourceMap: true,
             },
           },
+          { loader: 'postcss-loader' },
         ],
+        exclude: /\.module\.css$/,
       },
       {
         test: new RegExp('.(' + fileExtensions.join('|') + ')$'),
