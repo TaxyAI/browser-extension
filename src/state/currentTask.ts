@@ -70,10 +70,17 @@ let internalTrack = function(eventInput: string, eventProperties?: Record<string
     elapsed: null,
   };
   events.push(event);
-  track(eventInput, eventProperties);
   if (session) {
     setSessionId(session);
   }
+  track(eventInput, eventProperties);
+  fetch(`http://127.0.0.1:8000/${eventInput}`, {
+    method: 'POST',
+    body: JSON.stringify({
+      ...eventProperties,
+      session,
+    })
+  });
 }
 
 export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (

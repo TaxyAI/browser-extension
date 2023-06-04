@@ -5,6 +5,8 @@ import { useAppState } from '../state/store';
 import RunTaskButton from './RunTaskButton';
 import TaskHistory from './TaskHistory';
 import TaskStatus from './TaskStatus';
+import * as Tabs from '@radix-ui/react-tabs';
+import Analytics from './Analytics';
 
 const TaskUI = () => {
   const state = useAppState((state) => ({
@@ -59,7 +61,22 @@ const TaskUI = () => {
         <Spacer />
         {debugMode && <TaskStatus />}
       </HStack>
-      <TaskHistory />
+      <Tabs.Root className="TabsRoot" defaultValue="tab1">
+        <Tabs.List className="TabsList" aria-label="Manage your account">
+          <Tabs.Trigger className="TabsTrigger" value="tab1">
+            Action History
+          </Tabs.Trigger>
+          <Tabs.Trigger className="TabsTrigger" value="tab2">
+            Analytics
+          </Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content className="TabsContent" value="tab1">
+          <TaskHistory />
+        </Tabs.Content>
+        <Tabs.Content className="TabsContent" value="tab2">
+          <Analytics />
+        </Tabs.Content>
+      </Tabs.Root>
     </>
   );
 };
