@@ -18,7 +18,6 @@ export default function Analytics() {
           ? events[selectedEventIndex].eventInput
           : 'Select an event to view its details'}
       </div>
-      <Search />
     </div>
   );
 }
