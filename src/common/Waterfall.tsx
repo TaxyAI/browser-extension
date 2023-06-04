@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { IWaterfallEvent } from '../state/store';
+import { IWaterfallEvent, useEventStore } from '../state/store';
 import clsx from 'clsx';
 import * as HoverCard from '@radix-ui/react-hover-card';
 
@@ -218,9 +218,9 @@ export default function Waterfall({
   const [isGrowing, setIsGrowing] = React.useState<boolean>(false);
   const waterfallChartRef = React.useRef<HTMLDivElement>(null);
 
-  // const storedEvents = useEventStore.getState().events;
+  const storedEvents = useEventStore.getState().events;
   // FOR FRONTEND DEV PURPOSES ONLY
-  const storedEvents = sampleEvents;
+  // const storedEvents = sampleEvents;
 
   useEffect(() => {
     console.log('Events fetched from Zustand', storedEvents);

@@ -1,5 +1,6 @@
 import React from 'react';
 import Waterfall, { sampleEvents } from './Waterfall';
+import Search from './Search';
 
 export default function Analytics() {
   const [selectedEventIndex, setSelectedEventIndex] = React.useState<
@@ -17,6 +18,7 @@ export default function Analytics() {
           ? events[selectedEventIndex].eventInput
           : 'Select an event to view its details'}
       </div>
+      <Search />
     </div>
   );
 }

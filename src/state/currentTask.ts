@@ -45,11 +45,13 @@ export type CurrentTaskSlice = {
   };
 };
 
+let startTime: null | number = null;
 let time: null | number = null;
 export const events: Array<IWaterfallEvent> = [];
 let internalTrack = function(eventInput: string, eventProperties?: Record<string, any> | undefined, session?: number, eventOptions?: import("@amplitude/analytics-types").EventOptions | undefined) {
   if (time == null) {
     time = performance.now();
+    startTime = time;
   } else {
     const newTime = performance.now();
     const duration = newTime - time;
@@ -62,7 +64,7 @@ let internalTrack = function(eventInput: string, eventProperties?: Record<string
         {
           ...storedEvents[storedEvents.length - 1],
           elapsed: duration,
-          finished: newTime,
+          finished: newTime - startTime,
         }
       ],
     });
@@ -71,14 +73,21 @@ let internalTrack = function(eventInput: string, eventProperties?: Record<string
   const event: IWaterfallEvent = {
     eventInput,
     eventProperties,
-    start: time,
+    start: time - startTime,
     elapsed: null,
     finished: null,
   };
   const storedEvents = useEventStore.getState().events
-  useEventStore.setState({
-    events: [...storedEvents, event],
-  });
+
+  if (eventInput === "StartTask") {
+    useEventStore.setState({
+      events: [event],
+    });
+  } else {
+      useEventStore.setState({
+      events: [...storedEvents, event],
+    });
+  }
   if (session) {
     setSessionId(session);
   }
