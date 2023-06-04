@@ -15,7 +15,7 @@ import templatize from '../helpers/shrinkHTML/templatize';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { sleep, truthyFilter } from '../helpers/utils';
 import { MyStateCreator } from './store';
-import { track } from '@amplitude/analytics-browser';
+import { track, setSessionId } from '@amplitude/analytics-browser';
 import { v4 as uuidv4 } from 'uuid';
 
 export type TaskHistoryEntry = {
@@ -53,7 +53,7 @@ export type Event = {
 
 let time: null | number = null;
 export const events: Array<Event> = [];
-let internalTrack = function(eventInput: string, eventProperties?: Record<string, any> | undefined, eventOptions?: import("@amplitude/analytics-types").EventOptions | undefined) {
+let internalTrack = function(eventInput: string, eventProperties?: Record<string, any> | undefined, session?: number, eventOptions?: import("@amplitude/analytics-types").EventOptions | undefined) {
   if (time == null) {
     time = performance.now();
   } else {
@@ -61,15 +61,19 @@ let internalTrack = function(eventInput: string, eventProperties?: Record<string
     const duration = newTime - time;
     time = newTime;
     events[events.length - 1].elapsed = duration;
-  }
+  };
   
-  events.push({
+  const event: Event = {
     eventInput,
     eventProperties,
     start: time,
     elapsed: null,
-  })
-  track(eventInput, eventProperties)
+  };
+  events.push(event);
+  track(eventInput, eventProperties);
+  if (session) {
+    setSessionId(session);
+  }
 }
 
 export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
@@ -115,24 +119,29 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         await attachDebugger(tabId);
         await disableIncompatibleExtensions();
 
-        const session = uuidv4();
+        const session = Date.now();
         const startSessionProperties = {
-          session,
           instructions,
           site: window.location.toString(),
         };
-        internalTrack("StartTask", startSessionProperties);
+        internalTrack("StartTask", startSessionProperties, session);
         // eslint-disable-next-line no-constant-condition
         while (true) {
-          if (wasStopped()) break;
-
           const actionId = uuidv4();
+          
+          if (wasStopped()) {
+            const cancelProperties = {
+              actionId,
+            };
+            internalTrack("CancelTask", cancelProperties, session);
+            break;
+          }
+
           const processDOMProperties = {
-            session,
             actionId,
             // history: JSON.stringify(get().currentTask.history),
           };
-          internalTrack("ProcessDOM", processDOMProperties);
+          internalTrack("ProcessDOM", processDOMProperties, session);
 
           setActionStatus('pulling-dom');
           const pageDOM = await getSimplifiedDom();
@@ -140,11 +149,25 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             set((state) => {
               state.currentTask.status = 'error';
             });
+          
+            const errorProperties = {
+              actionId,
+              error: 'Could not get DOM',
+            };
+            internalTrack("ActionError", errorProperties, session);
+
             break;
           }
           const html = pageDOM.outerHTML;
 
-          if (wasStopped()) break;
+          if (wasStopped()) {
+            const cancelProperties = {
+              actionId,
+            };
+            internalTrack("CancelTask", cancelProperties, session);
+
+            break;
+          }
           setActionStatus('transforming-dom');
           const currentDom = templatize(html);
 
@@ -153,12 +176,11 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             .filter(truthyFilter);
           
           const determineActionProperties = {
-            session,
             actionId,
             // history: JSON.stringify(get().currentTask.history),
             // dom: pageDOM,
           };
-          internalTrack("DetermineAction", determineActionProperties);
+          internalTrack("DetermineAction", determineActionProperties, session);
 
           setActionStatus('performing-query');
 
@@ -176,20 +198,33 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             set((state) => {
               state.currentTask.status = 'error';
             });
+
+            const errorProperties = {
+              actionId,
+              error: 'Could not determine next action',
+            };
+            internalTrack("ActionError", errorProperties, session);
+
             break;
           }
 
-          if (wasStopped()) break;
+          if (wasStopped()) {
+            const cancelProperties = {
+              actionId,
+            };
+            internalTrack("CancelTask", cancelProperties, session);
+
+            break;
+          }
 
           const action = parseResponse(query.response);
 
           const performActionProperties = {
-            session,
             actionId,
             ...query,
             parsedResponse: action,
           }
-          internalTrack("PerformAction", performActionProperties);
+          internalTrack("PerformAction", performActionProperties, session);
 
           setActionStatus('performing-action');
 
@@ -203,6 +238,13 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           });
           if ('error' in action) {
             onError(action.error);
+
+            const errorProperties = {
+              actionId,
+              error: action.error,
+            };
+            internalTrack("ActionError", errorProperties, session);
+
             break;
           }
           if (
@@ -210,6 +252,26 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             action.parsedAction.name === 'finish' ||
             action.parsedAction.name === 'fail'
           ) {
+            if (action == null) {
+              const errorProperties = {
+                actionId,
+                error: 'No action returned from model',
+              };
+              internalTrack("ActionError", errorProperties, session);
+            } else if (action.parsedAction.name === 'finish') {
+              const successProperties = {
+                actionId,
+                parsedResponse: action,
+              };
+              internalTrack("ActionSuccess", successProperties, session);
+            } else if (action.parsedAction.name === 'fail') {
+              const errorProperties = {
+                actionId,
+                error: 'Model returned fail action',
+                parsedResponse: action,
+              };
+              internalTrack("ActionError", errorProperties, session);
+            }
             break;
           }
 
@@ -222,20 +284,33 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             );
           }
 
-          if (wasStopped()) break;
+          if (wasStopped()) {
+            const cancelProperties = {
+              actionId,
+            };
+            internalTrack("CancelTask", cancelProperties, session);
+
+            break;
+          }
 
           // While testing let's automatically stop after 50 actions to avoid
           // infinite loops
-          if (get().currentTask.history.length >= 50) {
+          const actionLimit = 50;
+          if (get().currentTask.history.length >= actionLimit) {
+            const errorProperties = {
+              actionId,
+              error: `Stopped after ${actionLimit} actions`,
+            };
+            internalTrack("ActionError", errorProperties, session);
+            
             break;
           }
 
           const finishActionProperties = {
-            session,
             actionId,
             action: action?.parsedAction.name,
           }
-          internalTrack("FinishAction", finishActionProperties);
+          internalTrack("FinishAction", finishActionProperties, session);
 
           setActionStatus('waiting');
           // sleep 2 seconds. This is pretty arbitrary; we should figure out a better way to determine when the page has settled.
@@ -246,9 +321,8 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         });
         
         const finishSessionProperties = {
-          session,
         };
-        internalTrack("FinishTask", finishSessionProperties);
+        internalTrack("FinishTask", finishSessionProperties, session);
       } catch (e: any) {
         onError(e.message);
         set((state) => {
