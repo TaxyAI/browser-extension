@@ -1,6 +1,6 @@
 import React from 'react';
 import Waterfall, { sampleEvents } from './Waterfall';
-import Search from './Search';
+import { IWaterfallEvent, useEventStore } from '../state/store';
 
 export default function Analytics() {
   const [selectedEventIndex, setSelectedEventIndex] = React.useState<
@@ -8,7 +8,7 @@ export default function Analytics() {
   >(null);
 
   // FOR FRONTEND DEV PURPOSES ONLY
-  const events = sampleEvents;
+  const events = useEventStore.getState().events;
 
   return (
     <div className="mt-4">
