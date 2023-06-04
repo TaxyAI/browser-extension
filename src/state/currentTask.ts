@@ -83,13 +83,16 @@ let internalTrack = function(eventInput: string, eventProperties?: Record<string
     setSessionId(session);
   }
   track(eventInput, eventProperties);
-  // fetch(`http://127.0.0.1:8000/${eventInput}`, {
-  //   method: 'POST',
-  //   body: JSON.stringify({
-  //     ...eventProperties,
-  //     session,
-  //   })
-  // });
+  fetch(`http://127.0.0.1:8000/${eventInput}`, {
+    method: 'POST',
+    body: JSON.stringify({
+      ...eventProperties,
+      session,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 }
 
 export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
@@ -135,10 +138,12 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         await attachDebugger(tabId);
         await disableIncompatibleExtensions();
 
+        const site = activeTab.url?.split('/')[2];
+
         const session = Date.now();
         const startSessionProperties = {
           instructions,
-          site: window.location.toString(),
+          site,
         };
         internalTrack("StartTask", startSessionProperties, session);
         let query = {};
