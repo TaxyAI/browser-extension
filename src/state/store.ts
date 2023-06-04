@@ -7,13 +7,12 @@ import { createUiSlice, UiSlice } from './ui';
 import { createSettingsSlice, SettingsSlice } from './settings';
 import { createStore } from 'zustand/vanilla';
 
-
 export interface IWaterfallEvent {
-  eventInput: string,
-  eventProperties?: Record<string, any> | undefined,
-  start: number,
-  elapsed: number | null,
-  finished: number | null
+  eventInput: string;
+  eventProperties?: Record<string, any> | undefined;
+  start: number;
+  elapsed: number | null;
+  finished: number | null;
 }
 
 export type StoreType = {
@@ -58,12 +57,12 @@ export const useAppState = create<StoreType>()(
 );
 
 const initialEventState = {
-  events: [] as IWaterfallEvent[]
-}
+  events: [] as IWaterfallEvent[],
+};
 
 export const useEventStore = createStore(() => ({
   ...initialEventState,
-}))
+}));
 
 // @ts-expect-error used for debugging
 window.getState = useAppState.getState;

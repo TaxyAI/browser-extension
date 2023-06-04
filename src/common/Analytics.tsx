@@ -1,11 +1,22 @@
 import React from 'react';
-import Waterfall from './Waterfall';
+import Waterfall, { sampleEvents } from './Waterfall';
 
 export default function Analytics() {
+  const [selectedEventIndex, setSelectedEventIndex] = React.useState<
+    number | null
+  >(null);
+
+  // FOR FRONTEND DEV PURPOSES ONLY
+  const events = sampleEvents;
+
   return (
-    <div>
-      <h1 className="my-4 text-2xl font-semibold">Analytics</h1>
-      <Waterfall />
+    <div className="mt-4">
+      <Waterfall setSelectedEventIndex={setSelectedEventIndex} />
+      <div className="mt-4 h-full w-full bg-gray-100 flex flex-col items-center justify-center">
+        {selectedEventIndex !== null
+          ? events[selectedEventIndex].eventInput
+          : 'Select an event to view its details'}
+      </div>
     </div>
   );
 }
