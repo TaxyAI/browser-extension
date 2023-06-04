@@ -62,11 +62,20 @@ const TaskUI = () => {
         {debugMode && <TaskStatus />}
       </HStack>
       <Tabs.Root className="TabsRoot" defaultValue="tab1">
-        <Tabs.List className="TabsList" aria-label="Manage your account">
-          <Tabs.Trigger className="TabsTrigger" value="tab1">
+        <Tabs.List
+          className="flex flex-row gap-4"
+          aria-label="Manage your account"
+        >
+          <Tabs.Trigger
+            className="py-4 data-[state=active]:border-b data-[state=active]:border-gray-800 font-bold"
+            value="tab1"
+          >
             Action History
           </Tabs.Trigger>
-          <Tabs.Trigger className="TabsTrigger" value="tab2">
+          <Tabs.Trigger
+            value="tab2"
+            className="py-4 data-[state=active]:border-b data-[state=active]:border-gray-800 font-bold"
+          >
             Analytics
           </Tabs.Trigger>
         </Tabs.List>
