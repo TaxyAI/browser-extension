@@ -17,7 +17,7 @@ import { sleep, truthyFilter } from '../helpers/utils';
 import { MyStateCreator } from './store';
 import { track, setSessionId } from '@amplitude/analytics-browser';
 import { v4 as uuidv4 } from 'uuid';
-import { Event } from './store';
+import { IWaterfallEvent, useEventStore } from './store';
 
 export type TaskHistoryEntry = {
   prompt: string;
@@ -46,7 +46,7 @@ export type CurrentTaskSlice = {
 };
 
 let time: null | number = null;
-export const events: Array<Event> = [];
+export const events: Array<IWaterfallEvent> = [];
 let internalTrack = function(eventInput: string, eventProperties?: Record<string, any> | undefined, session?: number, eventOptions?: import("@amplitude/analytics-types").EventOptions | undefined) {
   if (time == null) {
     time = performance.now();
@@ -54,28 +54,40 @@ let internalTrack = function(eventInput: string, eventProperties?: Record<string
     const newTime = performance.now();
     const duration = newTime - time;
     time = newTime;
-    events[events.length - 1].elapsed = duration;
+    // useStore.setState({name: ‘John’})
+    useEventStore.setState({
+      events: [
+        ...events.slice(0, events.length - 1),
+        {
+          ...events[events.length - 1],
+          elapsed: duration,
+          finished: newTime,
+        }
+      ],
+    });
   };
   
-  const event: Event = {
+  const event: IWaterfallEvent = {
     eventInput,
     eventProperties,
     start: time,
     elapsed: null,
     finished: null,
   };
-  events.push(event);
+  useEventStore.setState({
+    events: [...events, event],
+  });
   if (session) {
     setSessionId(session);
   }
   track(eventInput, eventProperties);
-  fetch(`http://127.0.0.1:8000/${eventInput}`, {
-    method: 'POST',
-    body: JSON.stringify({
-      ...eventProperties,
-      session,
-    })
-  });
+  // fetch(`http://127.0.0.1:8000/${eventInput}`, {
+  //   method: 'POST',
+  //   body: JSON.stringify({
+  //     ...eventProperties,
+  //     session,
+  //   })
+  // });
 }
 
 export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
@@ -127,6 +139,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           site: window.location.toString(),
         };
         internalTrack("StartTask", startSessionProperties, session);
+        let query = {};
         // eslint-disable-next-line no-constant-condition
         while (true) {
           const actionId = uuidv4();
@@ -186,7 +199,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
 
           setActionStatus('performing-query');
 
-          const query = await determineNextAction(
+          query = await determineNextAction(
             instructions,
             previousActions.filter(
               (pa) => !('error' in pa)

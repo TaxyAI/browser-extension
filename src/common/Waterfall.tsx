@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { useStore } from 'zustand'
+import { useEventStore } from '../state/store'
 
 const eventTypes = ['parsingDOM', 'determineNextAction', 'domAction', 'fail'];
 export interface IEvent {
@@ -18,6 +20,13 @@ export default function Waterfall() {
   const [isGrowing, setIsGrowing] = React.useState<boolean>(false);
   const [currentEventId, setCurrentEventId] = React.useState<number>(0);
   const [xOffset, setXOffset] = React.useState<number>(0);
+
+  const storedEvents = useEventStore.getState().events
+
+  useEffect(() => {
+    console.log(storedEvents);
+  }, [storedEvents]);
+
 
   const startEvent = () => {
     setEvents((events) => [

@@ -5,9 +5,10 @@ import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 import { createCurrentTaskSlice, CurrentTaskSlice } from './currentTask';
 import { createUiSlice, UiSlice } from './ui';
 import { createSettingsSlice, SettingsSlice } from './settings';
+import { createStore } from 'zustand/vanilla';
 
 
-export type Event = {
+export interface IWaterfallEvent {
   eventInput: string,
   eventProperties?: Record<string, any> | undefined,
   start: number,
@@ -56,7 +57,13 @@ export const useAppState = create<StoreType>()(
   )
 );
 
-export const useEventStore = create
+const initialEventState = {
+  events: [] as IWaterfallEvent[]
+}
+
+export const useEventStore = createStore(() => ({
+  ...initialEventState,
+}))
 
 // @ts-expect-error used for debugging
 window.getState = useAppState.getState;
