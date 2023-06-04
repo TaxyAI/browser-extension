@@ -45,7 +45,7 @@ export type CurrentTaskSlice = {
   };
 };
 
-let startTime: null | number = null;
+export let startTime: null | number = 0;
 let time: null | number = null;
 export const events: Array<IWaterfallEvent> = [];
 let internalTrack = function(eventInput: string, eventProperties?: Record<string, any> | undefined, session?: number, eventOptions?: import("@amplitude/analytics-types").EventOptions | undefined) {

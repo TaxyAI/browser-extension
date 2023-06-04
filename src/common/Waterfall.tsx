@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { IWaterfallEvent, useEventStore } from '../state/store';
 import clsx from 'clsx';
 import * as HoverCard from '@radix-ui/react-hover-card';
+import { startTime as timeOrigin } from '../state/currentTask';
 
 // FOR FRONTEND DEV PURPOSES ONLY
 export const sampleEvents: IWaterfallEvent[] = [
@@ -228,10 +229,12 @@ export default function Waterfall({
       startTime === 0 && setStartTime(storedEvents[0].start);
       storedEvents.length > 11 &&
         waterfallChartRef.current?.scrollBy({ top: 24 });
-      if (storedEvents[storedEvents.length - 1].finished) {
+      
+      setCurrentBarWidth(0);
+      if (storedEvents[storedEvents.length - 1].finished || storedEvents[storedEvents.length - 1].eventInput === "FinishTask") {
         setIsGrowing(false);
       } else {
-        setIsGrowing(false);
+        setIsGrowing(true);
       }
     }
   }, [storedEvents]);
@@ -239,8 +242,10 @@ export default function Waterfall({
   const calcWidth = (event: IWaterfallEvent) => {
     if (event.finished) {
       return (event.finished - event.start) * pixelPerMs;
+    } else if (timeOrigin !== null) {
+      return (performance.now() - timeOrigin - event.start) * pixelPerMs;
     } else {
-      return (Date.now() - event.start) * pixelPerMs;
+      return 0;
     }
   };
 
