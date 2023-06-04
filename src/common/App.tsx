@@ -7,7 +7,7 @@ import TaskUI from './TaskUI';
 import logo from '../assets/img/icon-128.png';
 import * as amplitude from '@amplitude/analytics-browser';
 
-amplitude.init("ea8b57294ba085baafd55cc783db1d4a");
+amplitude.init('ea8b57294ba085baafd55cc783db1d4a');
 
 const App = () => {
   const openAIKey = useAppState((state) => state.settings.openAIKey);
@@ -25,7 +25,7 @@ const App = () => {
           />
 
           <Heading as="h1" size="lg" flex={1}>
-            Taxy AI
+            Travel Agent
           </Heading>
           <Box>
             <ModelDropdown />
