@@ -14,8 +14,8 @@ const App = () => {
 
   return (
     <ChakraProvider>
-      <Box p="8" fontSize="lg" w="full">
-        <HStack mb={4} alignItems="center">
+      <Box fontSize="lg" w="full">
+        <HStack mb={4} px={8} pt={8} alignItems="center">
           <img
             src={logo}
             width={32}
