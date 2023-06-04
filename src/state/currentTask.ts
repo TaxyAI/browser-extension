@@ -55,11 +55,12 @@ let internalTrack = function(eventInput: string, eventProperties?: Record<string
     const duration = newTime - time;
     time = newTime;
     // useStore.setState({name: ‘John’})
+    const storedEvents = useEventStore.getState().events
     useEventStore.setState({
       events: [
-        ...events.slice(0, events.length - 1),
+        ...storedEvents.slice(0, events.length - 1),
         {
-          ...events[events.length - 1],
+          ...storedEvents[storedEvents.length - 1],
           elapsed: duration,
           finished: newTime,
         }
@@ -74,8 +75,9 @@ let internalTrack = function(eventInput: string, eventProperties?: Record<string
     elapsed: null,
     finished: null,
   };
+  const storedEvents = useEventStore.getState().events
   useEventStore.setState({
-    events: [...events, event],
+    events: [...storedEvents, event],
   });
   if (session) {
     setSessionId(session);
