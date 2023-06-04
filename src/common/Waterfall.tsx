@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { IWaterfallEvent } from '../state/store';
 import clsx from 'clsx';
+import * as HoverCard from '@radix-ui/react-hover-card';
 
 // FOR FRONTEND DEV PURPOSES ONLY
 const sampleEvents: IWaterfallEvent[] = [
@@ -205,6 +206,7 @@ const sampleEvents: IWaterfallEvent[] = [
 
 const pixelPerMs = 0.02;
 const barWidthUpdateInterval = 10;
+const hoverCardDelay = 100;
 
 export default function Waterfall() {
   const [startTime, setStartTime] = React.useState<number>(0);
@@ -262,6 +264,25 @@ export default function Waterfall() {
 
   return (
     <>
+      {/* Legends */}
+      <div className="flex flex-row justify-end gap-2">
+        <div className="flex flex-row gap-1 items-center">
+          <div className="h-3 rounded-[4px] w-6 bg-sky-300"></div>
+          <small>Processing webpage</small>
+        </div>
+        <div className="flex flex-row gap-1 items-center">
+          <div className="h-3 rounded-[4px] w-6 bg-blue-300"></div>
+          <small>Determining next action</small>
+        </div>
+        <div className="flex flex-row gap-1 items-center">
+          <div className="h-3 rounded-[4px] w-6 bg-blue-500"></div>
+          <small>Performing next action</small>
+        </div>
+        <div className="flex flex-row items-center gap-1">
+          <div className="h-3 rounded-[4px] w-6 bg-gray-200"></div>
+          <small>Other actions</small>
+        </div>
+      </div>
       {/* Waterfall chart */}
       <div
         ref={waterfallChartRef}
@@ -306,7 +327,7 @@ export default function Waterfall() {
             <small className="text-gray-400 float-right pr-2 pt-1">1m 0s</small>
           </div>
         </div>
-        {/* Bars */}
+        {/* Chart */}
         <div className=" h-max relative">
           {/* Gridlines */}
           <div className="h-full flex flex-row absolute top-0 left-0">
@@ -332,24 +353,36 @@ export default function Waterfall() {
                   ? calcWidth(event)
                   : currentBarWidth;
                 return (
-                  <button
-                    className={clsx(
-                      'h-6 rounded-[4px] cursor-pointer block focus:outline-offset-2 focus:outline focus:outline-2',
-                      event.eventInput === 'ProcessDOM'
-                        ? 'bg-sky-300 hover:bg-sky-400 focus:outline-sky-400'
-                        : event.eventInput === 'DetermineAction'
-                        ? 'bg-blue-300 hover:bg-blue-400 focus:outline-blue-400'
-                        : event.eventInput === 'PerformAction'
-                        ? 'bg-blue-500 hover:bg-blue-600 focus:outline-blue-600'
-                        : 'bg-gray-200 hover:bg-gray-300 focus:outline-gray-300'
-                    )}
+                  <HoverCard.Root
                     key={index}
-                    style={{
-                      position: 'relative',
-                      width: barWidth,
-                      left: (event.start - startTime) * pixelPerMs,
-                    }}
-                  ></button>
+                    openDelay={hoverCardDelay}
+                    closeDelay={hoverCardDelay}
+                  >
+                    <HoverCard.Trigger asChild>
+                      <button
+                        className={clsx(
+                          'h-6 rounded-[4px] cursor-pointer block focus:outline-offset-2 focus:outline focus:outline-2',
+                          event.eventInput === 'ProcessDOM'
+                            ? 'bg-sky-300 hover:bg-sky-400 focus:outline-sky-400'
+                            : event.eventInput === 'DetermineAction'
+                            ? 'bg-blue-300 hover:bg-blue-400 focus:outline-blue-400'
+                            : event.eventInput === 'PerformAction'
+                            ? 'bg-blue-500 hover:bg-blue-600 focus:outline-blue-600'
+                            : 'bg-gray-200 hover:bg-gray-300 focus:outline-gray-300'
+                        )}
+                        style={{
+                          position: 'relative',
+                          width: barWidth,
+                          left: (event.start - startTime) * pixelPerMs,
+                        }}
+                      ></button>
+                    </HoverCard.Trigger>
+                    <HoverCard.Portal>
+                      <HoverCard.Content sideOffset={5}>
+                        <p>{event.elapsed}</p>
+                      </HoverCard.Content>
+                    </HoverCard.Portal>
+                  </HoverCard.Root>
                 );
               })}
           </div>
