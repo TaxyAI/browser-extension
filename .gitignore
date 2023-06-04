@@ -20,3 +20,6 @@
 
 # secrets
 secrets.*.js
+
+yarn.lock
+package-lock.json
