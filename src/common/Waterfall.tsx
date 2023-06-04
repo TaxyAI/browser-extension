@@ -1,26 +1,23 @@
-import React from 'react';
-import WaterfallBar from './WaterfallBar';
+import React, { useEffect } from 'react';
 
 export interface IEvent {
   id: number;
   start: number;
   finish?: number;
+  xOffSet?: number;
 }
 
 export default function Waterfall() {
   const [events, setEvents] = React.useState<IEvent[]>([]);
-  const [currentBarWidth, setCurrentBarWidth] = React.useState<number>(100);
+  const [currentBarWidth, setCurrentBarWidth] = React.useState<number>(0);
   const [isGrowing, setIsGrowing] = React.useState<boolean>(false);
   const [currentEventId, setCurrentEventId] = React.useState<number>(0);
-  const [now, setNow] = React.useState<number | null>(null);
-
-  // let barWidth = 100;
+  const [xOffset, setXOffset] = React.useState<number>(0);
 
   const startEvent = () => {
-    console.log(events);
     setEvents((events) => [
       ...events,
-      { id: currentEventId, start: Date.now() },
+      { id: currentEventId, start: Date.now(), xOffSet: xOffset },
     ]);
     setIsGrowing(true);
   };
@@ -36,8 +33,12 @@ export default function Waterfall() {
         return { ...event };
       }
     });
+    console.log(updatedEvents);
     setEvents(updatedEvents);
+    setIsGrowing(false);
     setCurrentEventId((id) => id + 1);
+    setCurrentBarWidth(0);
+    setXOffset((offset) => offset + calcWidth(events[events.length - 1]));
   };
 
   const calcWidth = (event: IEvent) => {
@@ -48,6 +49,16 @@ export default function Waterfall() {
     }
   };
 
+  useEffect(() => {
+    const barInterval = setInterval(() => {
+      if (isGrowing) {
+        console.log(currentBarWidth);
+        setCurrentBarWidth((width) => width + 1);
+      }
+    }, 100);
+    return () => clearInterval(barInterval);
+  }, [isGrowing]);
+
   return (
     <>
       <button className="border border-gray-400" onClick={startEvent}>
@@ -57,8 +68,19 @@ export default function Waterfall() {
         End event
       </button>
       {events.map((event, index) => {
-        console.log(index);
-        return <WaterfallBar index={index} event={event} />;
+        // return <WaterfallBar index={index} event={event} />;
+        console.log(xOffset);
+        return (
+          <div
+            className="h-4 bg-red-300"
+            key={index}
+            style={{
+              position: 'relative',
+              width: event.finish ? calcWidth(event) : currentBarWidth,
+              left: event.xOffSet,
+            }}
+          ></div>
+        );
       })}
     </>
   );

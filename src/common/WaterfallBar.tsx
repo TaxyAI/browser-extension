@@ -16,9 +16,6 @@ export default function WaterfallBar({
   }
 
   useEffect(() => {
-    if (event.finish) {
-      setCurrentBarWidth((event.finish - event.start) / 100);
-    }
     const barInterval = setInterval(() => {
       if (!event.finish) {
         console.log(currentBarWidth);
@@ -26,15 +23,21 @@ export default function WaterfallBar({
       }
     }, 100);
     return () => clearInterval(barInterval);
-  }, [event.finish]);
+  }, [event]);
 
-  const barWidth = 100;
+  const calcWidth = (event: IEvent) => {
+    if (event.finish) {
+      return (event.finish - event.start) / 100;
+    } else {
+      return (Date.now() - event.start) / 100;
+    }
+  };
 
   return (
     <div
       className="h-4 bg-red-300"
       key={index}
-      style={{ width: currentBarWidth }}
+      style={{ width: event.finish ? calcWidth(event) : currentBarWidth }}
     ></div>
   );
 }
