@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import * as HoverCard from '@radix-ui/react-hover-card';
 
 // FOR FRONTEND DEV PURPOSES ONLY
-const sampleEvents: IWaterfallEvent[] = [
+export const sampleEvents: IWaterfallEvent[] = [
   {
     eventInput: 'StartTask',
     eventProperties: {
@@ -208,7 +208,11 @@ const pixelPerMs = 0.02;
 const barWidthUpdateInterval = 10;
 const hoverCardDelay = 100;
 
-export default function Waterfall() {
+export default function Waterfall({
+  setSelectedEventIndex,
+}: {
+  setSelectedEventIndex: (index: number | null) => void;
+}) {
   const [startTime, setStartTime] = React.useState<number>(0);
   const [currentBarWidth, setCurrentBarWidth] = React.useState<number>(0);
   const [isGrowing, setIsGrowing] = React.useState<boolean>(false);
@@ -375,11 +379,13 @@ export default function Waterfall() {
                           width: barWidth,
                           left: (event.start - startTime) * pixelPerMs,
                         }}
+                        onClick={() => setSelectedEventIndex(index)}
                       ></button>
                     </HoverCard.Trigger>
                     <HoverCard.Portal>
                       <HoverCard.Content sideOffset={5}>
                         <p>{event.elapsed}</p>
+                        <HoverCard.Arrow />
                       </HoverCard.Content>
                     </HoverCard.Portal>
                   </HoverCard.Root>
