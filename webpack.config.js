@@ -65,12 +65,6 @@ var options = {
           {
             loader: 'css-loader',
           },
-          {
-            loader: 'sass-loader',
-            options: {
-              sourceMap: true,
-            },
-          },
           { loader: 'postcss-loader' },
         ],
         exclude: /\.module\.css$/,
