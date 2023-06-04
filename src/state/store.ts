@@ -6,6 +6,15 @@ import { createCurrentTaskSlice, CurrentTaskSlice } from './currentTask';
 import { createUiSlice, UiSlice } from './ui';
 import { createSettingsSlice, SettingsSlice } from './settings';
 
+
+export type Event = {
+  eventInput: string,
+  eventProperties?: Record<string, any> | undefined,
+  start: number,
+  elapsed: number | null,
+  finished: number | null
+}
+
 export type StoreType = {
   currentTask: CurrentTaskSlice;
   ui: UiSlice;
@@ -46,6 +55,8 @@ export const useAppState = create<StoreType>()(
     }
   )
 );
+
+export const useEventStore = create
 
 // @ts-expect-error used for debugging
 window.getState = useAppState.getState;

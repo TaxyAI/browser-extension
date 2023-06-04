@@ -17,6 +17,7 @@ import { sleep, truthyFilter } from '../helpers/utils';
 import { MyStateCreator } from './store';
 import { track, setSessionId } from '@amplitude/analytics-browser';
 import { v4 as uuidv4 } from 'uuid';
+import { Event } from './store';
 
 export type TaskHistoryEntry = {
   prompt: string;
@@ -44,13 +45,6 @@ export type CurrentTaskSlice = {
   };
 };
 
-export type Event = {
-  eventInput: string,
-  eventProperties?: Record<string, any> | undefined,
-  start: number,
-  elapsed: number | null,
-}
-
 let time: null | number = null;
 export const events: Array<Event> = [];
 let internalTrack = function(eventInput: string, eventProperties?: Record<string, any> | undefined, session?: number, eventOptions?: import("@amplitude/analytics-types").EventOptions | undefined) {
@@ -68,6 +62,7 @@ let internalTrack = function(eventInput: string, eventProperties?: Record<string
     eventProperties,
     start: time,
     elapsed: null,
+    finished: null,
   };
   events.push(event);
   if (session) {
@@ -328,6 +323,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         });
         
         const finishSessionProperties = {
+          ...query
         };
         internalTrack("FinishTask", finishSessionProperties, session);
       } catch (e: any) {
