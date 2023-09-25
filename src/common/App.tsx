@@ -5,7 +5,7 @@ import ModelDropdown from './ModelDropdown';
 import SetAPIKey from './SetAPIKey';
 import TaskUI from './TaskUI';
 import OptionsDropdown from './OptionsDropdown';
-import logo from '../assets/img/icon-128.png';
+import logo from '../assets/img/quail-logo.png';
 
 const App = () => {
   const openAIKey = useAppState((state) => state.settings.openAIKey);
@@ -23,7 +23,7 @@ const App = () => {
           />
 
           <Heading as="h1" size="lg" flex={1}>
-            Taxy AI
+            Quail
           </Heading>
           <HStack spacing={2}>
             <ModelDropdown />

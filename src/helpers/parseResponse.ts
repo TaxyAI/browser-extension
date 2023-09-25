@@ -13,6 +13,7 @@ export type ParsedResponse =
   };
 
 export function parseResponse(text: string): ParsedResponse {
+  console.log("text: ", text);
   const thoughtMatch = text.match(/<Thought>(.*?)<\/Thought>/);
   const actionMatch = text.match(/<Action>(.*?)<\/Action>/);
 
@@ -53,11 +54,18 @@ export function parseResponse(text: string): ParsedResponse {
     };
   }
 
-  const argsArray = actionArgsString
+  let argsArray = actionArgsString
     .split(',')
     .map((arg) => arg.trim())
     .filter((arg) => arg !== '');
   const parsedArgs: Record<string, number | string> = {};
+
+  // TODO(holloway): This is a shitty hack to fix the bad comma parsing that occurs if the text value itself contains a comma.
+  if (availableAction.name === 'setValue') {
+    const split = actionArgsString.split(',');
+    argsArray = [split[0].trim(), split.slice(1).join(',').trim()];
+  }
+  console.log("argsArray: ", argsArray);
 
   if (argsArray.length !== availableAction.args.length) {
     return {

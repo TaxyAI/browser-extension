@@ -45,8 +45,8 @@ async function getCenterCoordinates(objectId: string) {
   return { x: centerX, y: centerY };
 }
 
-const delayBetweenClicks = 1000; // Set this value to control the delay between clicks
-const delayBetweenKeystrokes = 100; // Set this value to control typing speed
+const delayBetweenClicks = 100; // Set this value to control the delay between clicks
+const delayBetweenKeystrokes = 10; // Set this value to control typing speed
 
 async function clickAtPosition(
   x: number,
@@ -82,18 +82,61 @@ async function selectAllText(x: number, y: number) {
   await clickAtPosition(x, y, 3);
 }
 
+// async function typeText(text: string): Promise<void> {
+//   for (const char of text) {
+//     console.log(char)
+//     await sendCommand('Input.dispatchKeyEvent', {
+//       type: 'keyDown',
+//       text: char,
+//     });
+//     await sleep(delayBetweenKeystrokes / 2);
+//     await sendCommand('Input.dispatchKeyEvent', {
+//       type: 'keyUp',
+//       text: char,
+//     });
+//     await sleep(delayBetweenKeystrokes / 2);
+//   }
+// }
 async function typeText(text: string): Promise<void> {
-  for (const char of text) {
+  let i = 0;
+  while (i < text.length) {
+    let actualChar = text[i];
+
+    // Handle the special case where "\n" sequence is found in the text
+    if (i < text.length - 1 && text[i] === '\\' && text[i + 1] === 'n') {
+      await sendCommand('Input.dispatchKeyEvent', {
+        type: 'keyDown',
+        key: 'Enter',
+        code: 'Enter',
+        text: '\r',
+        windowsVirtualKeyCode: 13,
+        nativeVirtualKeyCode: 13
+      });
+      await sleep(delayBetweenKeystrokes / 2);
+      await sendCommand('Input.dispatchKeyEvent', {
+        type: 'keyUp',
+        key: 'Enter',
+        code: 'Enter',
+        text: '\r',
+        windowsVirtualKeyCode: 13,
+        nativeVirtualKeyCode: 13
+      });
+      i += 2;  // Skip the next character
+      continue;
+    }
+
     await sendCommand('Input.dispatchKeyEvent', {
       type: 'keyDown',
-      text: char,
+      text: actualChar,
     });
     await sleep(delayBetweenKeystrokes / 2);
     await sendCommand('Input.dispatchKeyEvent', {
       type: 'keyUp',
-      text: char,
+      text: actualChar,
     });
     await sleep(delayBetweenKeystrokes / 2);
+
+    i++;  // Move to the next character
   }
 }
 

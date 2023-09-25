@@ -15,6 +15,7 @@ import templatize from '../helpers/shrinkHTML/templatize';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { sleep, truthyFilter } from '../helpers/utils';
 import { MyStateCreator } from './store';
+import { act } from "react-dom/test-utils";
 
 export type TaskHistoryEntry = {
   prompt: string;
@@ -129,6 +130,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
 
           setActionStatus('performing-action');
           const action = parseResponse(query.response);
+          console.log(action);
 
           set((state) => {
             state.currentTask.history.push({
@@ -153,6 +155,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           if (action.parsedAction.name === 'click') {
             await callDOMAction('click', action.parsedAction.args);
           } else if (action.parsedAction.name === 'setValue') {
+            console.log(`action?.parsedAction.args '`, action?.parsedAction.args, `'`);
             await callDOMAction(
               action?.parsedAction.name,
               action?.parsedAction.args
