@@ -6,6 +6,7 @@ import {
 import { useAppState } from '../state/store';
 import { availableActions } from './availableActions';
 import { ParsedResponseSuccess } from './parseResponse';
+//import fetch from 'node-fetch';
 
 const formattedActions = availableActions
   .map((action, i) => {
@@ -32,6 +33,40 @@ This is an example of an action:
 
 You must always include the <Thought> and <Action> open/close tags or else your response will be marked as invalid.`;
 
+// Function to check for injection attempts
+interface InjectionCheckResponse {
+  isInjectionAttempt: boolean;
+}
+
+async function checkForInjection(prompt: string): Promise<{ isInjectionAttempt: boolean }> {
+  // Retrieve the PG_API_KEY from the app state
+  const pgApiKey = useAppState.getState().settings.PGKey;
+  if (pgApiKey === null) {
+    console.error("PG_API_KEY is not set. Aborting injection check.");
+    throw new Error("PG_API_KEY is not set. Aborting injection check.");
+  }
+  const response = await fetch('https://api.predictionguard.com/injection', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': pgApiKey, 
+    },
+    body: JSON.stringify({
+      prompt: prompt,
+      detect: true,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json() as InjectionCheckResponse;
+  return { isInjectionAttempt: data.isInjectionAttempt };
+}
+
+
+
 export async function determineNextAction(
   taskInstructions: string,
   previousActions: ParsedResponseSuccess[],
@@ -41,6 +76,28 @@ export async function determineNextAction(
 ) {
   const model = useAppState.getState().settings.selectedModel;
   const prompt = formatPrompt(taskInstructions, previousActions, simplifiedDOM);
+  // async function checkForInjection(prompt, pgApiKey) {
+  //   const response = await fetch('https://api.predictionguard.com/injection', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'x-api-key': pgApiKey,
+  //     },
+  //     body: JSON.stringify({
+  //       prompt: prompt,
+  //       detect: true
+  //     }),
+  //   });
+  
+  //   if (!response.ok) {
+  //     throw new Error(`HTTP error! status: ${response.status}`);
+  //   }
+  
+  //   const data = await response.json();
+  //   return { isInjectionAttempt: data.isInjectionAttempt };
+  // }
+  const pgApiKey = useAppState.getState().settings.PGKey; // 
+  //const pgApiResponse = await checkForInjection(prompt, pgApiKey); need to figure out where to plCE THS
   const key = useAppState.getState().settings.openAIKey;
   if (!key) {
     notifyError?.('No OpenAI key found');
@@ -52,6 +109,14 @@ export async function determineNextAction(
       apiKey: key,
     })
   );
+  const pgApiResponse = await checkForInjection(prompt);
+  if (pgApiResponse.isInjectionAttempt) {
+    console.log('Injection attempt detected.');
+    notifyError?.('Injection attempt detected. Aborting.');
+    return null;
+  } else {
+    console.log('No injection attempt detected. Proceeding with OpenAI API.');
+  }  
 
   for (let i = 0; i < maxAttempts; i++) {
     try {
