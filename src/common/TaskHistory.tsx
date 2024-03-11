@@ -96,6 +96,10 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
       </Heading>
       <AccordionPanel backgroundColor="gray.100" p="2">
         <Accordion allowMultiple w="full" defaultIndex={1}>
+        <CollapsibleComponent
+            title="Injection Attempt Status"
+            text={injectionStatusText}
+          />
           <CollapsibleComponent
             title="Prompt"
             subtitle={`${entry.usage.prompt_tokens} tokens`}
@@ -109,10 +113,6 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
           <CollapsibleComponent
             title="Action"
             text={JSON.stringify(entry.action, null, 2)}
-          />
-          <CollapsibleComponent
-            title="Injection Attempt Status"
-            text={injectionStatusText}
           />
         </Accordion>
       </AccordionPanel>
