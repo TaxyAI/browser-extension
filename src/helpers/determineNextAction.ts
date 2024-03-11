@@ -61,7 +61,7 @@ export async function checkForInjection(prompt: string): Promise<boolean> {
 
   const data = await response.json();
   const probability = data.checks[0].probability;
-  return probability > 0.8;
+  return probability > 0.5;
 }
 
 export async function determineNextAction(
@@ -85,9 +85,10 @@ export async function determineNextAction(
       apiKey: key,
     })
   );
-  let isInjectionAttempt = false;
+  let isInjectionAttempt = false; // Correctly declared outside the try block
   try {
-    const isInjectionAttempt = await checkForInjection(prompt);
+    // Correctly update the variable without redeclaring it
+    isInjectionAttempt = await checkForInjection(prompt);
     if (isInjectionAttempt) {
       console.log('Injection attempt detected.');
       notifyError?.('Injection attempt detected. Aborting.');
@@ -99,7 +100,7 @@ export async function determineNextAction(
     console.error('Error checking for injection: ', error);
     notifyError?.('Error checking for injection. Aborting.');
     return null;
-}
+  }
  
   for (let i = 0; i < maxAttempts; i++) {
     try {
@@ -120,14 +121,12 @@ export async function determineNextAction(
       return {
         usage: completion.data.usage as CreateCompletionResponseUsage,
         prompt,
-//        pgApiResponse: pgApiResponseDetails,
-        response:
-          completion.data.choices[0].message?.content?.trim() + '</Action>',
-        injectionAttemptDetected: isInjectionAttempt,
+        response: completion.data.choices[0].message?.content?.trim() + '</Action>',
+        injectionAttemptDetected: isInjectionAttempt, // Correctly include this in the return
       };
     } catch (error: any) {
       console.log('determineNextAction error', error);
-      if (error.response.data.error.message.includes('server error')) {
+      if (error.response && error.response.data && error.response.data.error && error.response.data.error.message.includes('server error')) {
         // Problem with the OpenAI API, try again
         if (notifyError) {
           notifyError(error.response.data.error.message);
@@ -142,6 +141,7 @@ export async function determineNextAction(
     `Failed to complete query after ${maxAttempts} attempts. Please try again later.`
   );
 }
+
 
 export function formatPrompt(
   taskInstructions: string,
