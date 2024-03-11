@@ -10,7 +10,7 @@ import {
   ParsedResponseSuccess,
   parseResponse,
 } from '../helpers/parseResponse';
-import { determineNextAction } from '../helpers/determineNextAction';
+import { determineNextAction, checkForInjection } from '../helpers/determineNextAction';
 import templatize from '../helpers/shrinkHTML/templatize';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { sleep, truthyFilter } from '../helpers/utils';
@@ -21,6 +21,7 @@ export type TaskHistoryEntry = {
   response: string;
   action: ParsedResponse;
   usage: CreateCompletionResponseUsage;
+  injectionAttemptDetected: boolean;
 };
 
 export type CurrentTaskSlice = {
@@ -35,6 +36,7 @@ export type CurrentTaskSlice = {
     | 'transforming-dom'
     | 'performing-query'
     | 'performing-action'
+//    | 'checking-injection' 
     | 'waiting';
   actions: {
     runTask: (onError: (error: string) => void) => Promise<void>;
@@ -97,7 +99,15 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             break;
           }
           const html = pageDOM.outerHTML;
-
+          // setActionStatus('checking-injection');
+          // const isInjectionAttempt = await checkForInjection(html);
+          // if (isInjectionAttempt) {
+          //   onError('Injection attempt detected. Aborting.');
+          //   set((state) => {
+          //     state.currentTask.status = 'error';
+          //   });
+          //   break;
+          // }
           if (wasStopped()) break;
           setActionStatus('transforming-dom');
           const currentDom = templatize(html);
@@ -124,7 +134,12 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             });
             break;
           }
-
+          if (query.injectionAttemptDetected) {
+            console.log('Injection attempt detected.');
+            // If you have a UI element to display this, update it here
+          } else {
+            console.log('No injection attempt detected.');
+          }
           if (wasStopped()) break;
 
           setActionStatus('performing-action');
@@ -136,6 +151,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
               response: query.response,
               action,
               usage: query.usage,
+              injectionAttemptDetected: query.injectionAttemptDetected, 
             });
           });
           if ('error' in action) {

@@ -79,6 +79,8 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
     colors.bg = 'green.100';
   }
 
+  const injectionStatusText = entry.injectionAttemptDetected ? "Injection attempt detected." : "No injection attempt detected.";
+
   return (
     <AccordionItem>
       <Heading as="h3" size="sm" textColor={colors.text} bgColor={colors.bg}>
@@ -107,6 +109,10 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
           <CollapsibleComponent
             title="Action"
             text={JSON.stringify(entry.action, null, 2)}
+          />
+          <CollapsibleComponent
+            title="Injection Attempt Status"
+            text={injectionStatusText}
           />
         </Accordion>
       </AccordionPanel>

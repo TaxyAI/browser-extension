@@ -1,7 +1,7 @@
 export function attachDebugger(tabId: number) {
   return new Promise<void>((resolve, reject) => {
     try {
-      chrome.debugger.attach({ tabId }, '1.2', async () => {
+      chrome.debugger.attach({ tabId }, '1.3', async () => {
         if (chrome.runtime.lastError) {
           console.error(
             'Failed to attach debugger:',
