@@ -10,7 +10,7 @@ import {
   ParsedResponseSuccess,
   parseResponse,
 } from '../helpers/parseResponse';
-import { determineNextAction } from '../helpers/determineNextAction';
+import { determineNextAction, checkForInjectionAndGetProbability } from '../helpers/determineNextAction';
 import templatize from '../helpers/shrinkHTML/templatize';
 import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { sleep, truthyFilter } from '../helpers/utils';
@@ -21,6 +21,7 @@ export type TaskHistoryEntry = {
   response: string;
   action: ParsedResponse;
   usage: CreateCompletionResponseUsage;
+  injectionProbability: number; 
 };
 
 export type CurrentTaskSlice = {
@@ -35,6 +36,7 @@ export type CurrentTaskSlice = {
     | 'transforming-dom'
     | 'performing-query'
     | 'performing-action'
+    | 'checking-injection' 
     | 'waiting';
   actions: {
     runTask: (onError: (error: string) => void) => Promise<void>;
@@ -84,7 +86,6 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         await attachDebugger(tabId);
         await disableIncompatibleExtensions();
 
-        // eslint-disable-next-line no-constant-condition
         while (true) {
           if (wasStopped()) break;
 
@@ -97,6 +98,8 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             break;
           }
           const html = pageDOM.outerHTML;
+          let injectionProbability = 0; 
+          
 
           if (wasStopped()) break;
           setActionStatus('transforming-dom');
@@ -105,6 +108,17 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           const previousActions = get()
             .currentTask.history.map((entry) => entry.action)
             .filter(truthyFilter);
+
+            setActionStatus('checking-injection');
+            if (instructions !== null) {
+              injectionProbability = await checkForInjectionAndGetProbability(instructions, 
+                previousActions.filter(
+                  (pa) => !('error' in pa)
+                ) as ParsedResponseSuccess[],
+                currentDom);
+              // Log the injection check probability without aborting further actions
+              console.log(`Injection check probability: ${injectionProbability}`);
+            }
 
           setActionStatus('performing-query');
 
@@ -136,6 +150,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
               response: query.response,
               action,
               usage: query.usage,
+              injectionProbability: injectionProbability,
             });
           });
           if ('error' in action) {
@@ -161,14 +176,11 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
 
           if (wasStopped()) break;
 
-          // While testing let's automatically stop after 50 actions to avoid
-          // infinite loops
           if (get().currentTask.history.length >= 50) {
             break;
           }
 
           setActionStatus('waiting');
-          // sleep 2 seconds. This is pretty arbitrary; we should figure out a better way to determine when the page has settled.
           await sleep(2000);
         }
         set((state) => {
@@ -191,3 +203,4 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
     },
   },
 });
+

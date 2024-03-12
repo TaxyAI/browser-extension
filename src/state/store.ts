@@ -38,6 +38,7 @@ export const useAppState = create<StoreType>()(
         },
         settings: {
           openAIKey: state.settings.openAIKey,
+          PGKey: state.settings.PGKey,
           selectedModel: state.settings.selectedModel,
         },
       }),
