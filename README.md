@@ -26,14 +26,14 @@ A uses GPT-4 to control your browser and perform repetitive actions on your beha
 
 ## How it Works - The Action Cycle
 
-1. Taxy runs a content script on the webpage to pull the entire DOM. It simplifies the html it receives to only include interactive or semantically important elements, like buttons or text. It assigns an id to each interactive element. It then "templatizes" the DOM to reduce the token count even further.
-2. Taxy sends the simplified DOM, along with the user's instructions, to a selected LLM (currently GPT-3.5 and GPT-4 are supported). Taxy informs the LLM of two methods to interact with the webpage:
+1. Ally runs a content script on the webpage to pull the entire DOM. It simplifies the html it receives to only include interactive or semantically important elements, like buttons or text. It assigns an id to each interactive element. It then "templatizes" the DOM to reduce the token count even further.
+2. Ally sends the simplified DOM, along with the user's instructions, to a selected LLM (currently GPT-3.5 and GPT-4 are supported). Taxy informs the LLM of two methods to interact with the webpage:
    1. `click(id)` - click on the interactive element associated with that id
    2. `setValue(id, text)` - focus on a text input, clear its existing text, and type the specified text into that input
-3. When Taxy gets a completion from the LLM, it parses the response for an action. The action cycle will end at this stage if any of the following conditions are met:
+3. When Ally gets a completion from the LLM, it parses the response for an action. The action cycle will end at this stage if any of the following conditions are met:
    1. The LLM believes the task is complete. Instead of an action, the LLM can return an indication that it believes the user's task is complete based on the state of the DOM and the action history up to this point.
-   2. There was an error. Taxy's safety-first architecture causes it to automatically halt execution in the event of an unexpected response.
-4. Taxy executes the action using the [chrome.debugger API](https://developer.chrome.com/docs/extensions/reference/debugger/).
+   2. There was an error. Ally's safety-first architecture causes it to automatically halt execution in the event of an unexpected response.
+4. Ally executes the action using the [chrome.debugger API](https://developer.chrome.com/docs/extensions/reference/debugger/).
 5. The action is added to the action history and Ally cycles back to step 1 and parses the updated DOM. All prior actions are sent to the LLM as part of the prompt used to determine the next action. Ally can currently complete a maximum of 50 actions for a single task, though in practice most tasks require fewer than 10 actions.
 
 ## Tech Stack
