@@ -3,6 +3,7 @@ import { ActionPayload, availableActions } from './availableActions';
 export type ParsedResponseSuccess = {
   thought: string;
   action: string;
+  userHint: string;
   parsedAction: ActionPayload;
 };
 
@@ -15,6 +16,7 @@ export type ParsedResponse =
 export function parseResponse(text: string): ParsedResponse {
   const thoughtMatch = text.match(/<Thought>(.*?)<\/Thought>/);
   const actionMatch = text.match(/<Action>(.*?)<\/Action>/);
+  const userHintMatch = text.match(/<UserHint>(.*?)<\/UserHint>/);
 
   if (!thoughtMatch) {
     return {
@@ -27,9 +29,15 @@ export function parseResponse(text: string): ParsedResponse {
       error: 'Invalid response: Action not found in the model response.',
     };
   }
+  if (!userHintMatch) {
+    return {
+      error: 'Invalid response: UserHint not found in the model response.',
+    };
+  }
 
   const thought = thoughtMatch[1];
   const actionString = actionMatch[1];
+  const userHint = userHintMatch[1];
   const actionPattern = /(\w+)\((.*?)\)/;
   const actionParts = actionString.match(actionPattern);
 
@@ -106,6 +114,7 @@ export function parseResponse(text: string): ParsedResponse {
   return {
     thought,
     action: actionString,
+    userHint,
     parsedAction,
   };
 }

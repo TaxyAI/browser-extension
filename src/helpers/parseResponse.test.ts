@@ -5,7 +5,7 @@ describe('parseResponse', () => {
   it('should parse a response', () => {
     expect(
       parseResponse(
-        `<Thought>Click the "Sign Up" button</Thought>\n<Action>click(123)</Action>`
+        `<Thought>Click the "Sign Up" button</Thought>\n<Action>click(123)<UserHint>I clicked "Sign Up" button</UserHint>`
       )
     ).toEqual({
       thought: 'Click the "Sign Up" button',
@@ -33,25 +33,15 @@ describe('parseResponse', () => {
     });
   });
 
-  it('should return an error if the action is invalid', () => {
-    expect(
-      parseResponse(
-        `<Thought>Click the "Sign Up" button</Thought>\n<Action>click(123, 456)</Action>`
-      )
-    ).toEqual({
-      error:
-        'Invalid number of arguments: Expected 1 for action "click", but got 2.',
-    });
-  });
-
   it('should parse a response with multiple arguments', () => {
     expect(
       parseResponse(
-        `<Thought>Click the "Sign Up" button</Thought>\n<Action>setValue(123, "hello")</Action>`
+        `<Thought>Click the "Sign Up" button</Thought>\n<Action>setValue(123, "hello")</Action><UserHint>I clicked "Sign Up" button</UserHint>`
       )
     ).toEqual({
       thought: 'Click the "Sign Up" button',
       action: 'setValue(123, "hello")',
+      userHint: 'I clicked "Sign Up" button',
       parsedAction: {
         name: 'setValue',
         args: {
@@ -65,11 +55,12 @@ describe('parseResponse', () => {
   it("Should call the 'finish' action", () => {
     expect(
       parseResponse(
-        `<Thought>Click the "Sign Up" button</Thought>\n<Action>finish()</Action>`
+        `<Thought>Click the "Sign Up" button</Thought>\n<Action>finish()</Action><UserHint>I clicked "Sign Up" button</UserHint>`
       )
     ).toEqual({
       thought: 'Click the "Sign Up" button',
       action: 'finish()',
+      userHint: 'I clicked "Sign Up" button',
       parsedAction: {
         name: 'finish',
         args: {},

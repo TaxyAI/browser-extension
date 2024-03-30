@@ -17,7 +17,7 @@ const formattedActions = availableActions
   .join('\n');
 
 const systemMessage = `
-You are a browser automation assistant.
+You are a browser automation assistant for helping blind people.
 
 You can use the following tools:
 
@@ -29,8 +29,9 @@ This is an example of an action:
 
 <Thought>I should click the add to cart button</Thought>
 <Action>click(223)</Action>
+<UserHint>I added the product to the card</UserHint>
 
-You must always include the <Thought> and <Action> open/close tags or else your response will be marked as invalid.`;
+You must always include the <Thought>, <Action> and <UserHint> open/close tags or else your response will be marked as invalid.`;
 
 export async function determineNextAction(
   taskInstructions: string,
@@ -66,14 +67,14 @@ export async function determineNextAction(
         ],
         max_tokens: 500,
         temperature: 0,
-        stop: ['</Action>'],
+        stop: ['</UserHint>'],
       });
 
       return {
         usage: completion.data.usage as CreateCompletionResponseUsage,
         prompt,
         response:
-          completion.data.choices[0].message?.content?.trim() + '</Action>',
+          completion.data.choices[0].message?.content?.trim() + '</UserHint>',
       };
     } catch (error: any) {
       console.log('determineNextAction error', error);
@@ -104,7 +105,7 @@ export function formatPrompt(
     const serializedActions = previousActions
       .map(
         (action) =>
-          `<Thought>${action.thought}</Thought>\n<Action>${action.action}</Action>`
+          `<Thought>${action.thought}</Thought>\n<Action>${action.action}</Action>\n<UserHint>${action.userHint}</UserHint>`
       )
       .join('\n\n');
     previousActionsString = `You have already taken the following actions: \n${serializedActions}\n\n`;
