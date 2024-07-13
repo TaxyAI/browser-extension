@@ -8,7 +8,12 @@ import OptionsDropdown from './OptionsDropdown';
 import logo from '../assets/img/icon-128.png';
 
 const App = () => {
-  const openAIKey = useAppState((state) => state.settings.openAIKey);
+  const { openAIKey, PGKey } = useAppState((state) => ({
+    openAIKey: state.settings.openAIKey,
+    PGKey: state.settings.PGKey, 
+  }));
+
+  const isApiKeySet = openAIKey || PGKey;
 
   return (
     <ChakraProvider>
