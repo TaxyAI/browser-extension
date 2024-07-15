@@ -75,30 +75,36 @@ export async function checkForInjectionAndGetProbability(
 ): Promise<number> {
   const pgApiKey = useAppState.getState().settings.PGKey;
   if (!pgApiKey) {
-    console.error("PG_API_KEY is not set. Aborting injection check.");
-    throw new Error("PG_API_KEY is not set. Aborting injection check.");
+    console.warn("PG_API_KEY is not set. Skipping injection check.");
+    return 0; // Keine Aktion ausführen und 0 zurückgeben
   }
+
   const prompt = formatPrompt(taskInstructions, previousActions, simplifiedDOM);
 
-  const response = await fetch('https://api.predictionguard.com/injection', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': pgApiKey,
-    },
-    body: JSON.stringify({
-      prompt: prompt,
-      detect: true,
-    }),
-  });
+  try {
+    const response = await fetch('https://api.predictionguard.com/injection', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': pgApiKey,
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        detect: true,
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const probability = data.checks[0].probability;
+    return probability;
+  } catch (error) {
+    console.error("Error checking for injection:", error);
+    return 0; // Fehler aufgetreten, 0 zurückgeben
   }
-
-  const data = await response.json();
-  const probability = data.checks[0].probability;
-  return probability;
 }
 
 
