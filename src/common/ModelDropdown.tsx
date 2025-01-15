@@ -3,19 +3,13 @@ import React from 'react';
 import { useAppState } from '../state/store';
 
 const ModelDropdown = () => {
-  const { selectedModel, updateSettings } = useAppState((state) => ({
-    selectedModel: state.settings.selectedModel,
-    updateSettings: state.settings.actions.update,
-  }));
-
-  const { openAIKey } = useAppState((state) => ({
-    openAIKey: state.settings.openAIKey,
-  }));
+  const selectedModel = useAppState((state) => state.settings.selectedModel);
+  const updateSettings = useAppState((state) => state.settings.actions.update);
+  const openAIKey = useAppState((state) => state.settings.openAIKey);
 
   if (!openAIKey) return null;
 
   return (
-    // Chakra UI Select component
     <Select
       value={selectedModel || ''}
       onChange={(e) => updateSettings({ selectedModel: e.target.value })}
@@ -26,6 +20,7 @@ const ModelDropdown = () => {
       <option value="gpt-4-1106-preview">GPT-4 Turbo</option>
       <option value="gpt-4o">GPT-4o</option>
       <option value="gpt-4o-mini">GPT-4o mini</option>
+      <option value="o1">o1</option>
     </Select>
   );
 };

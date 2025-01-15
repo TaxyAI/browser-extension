@@ -1,8 +1,4 @@
-import {
-  Configuration,
-  CreateCompletionResponseUsage,
-  OpenAIApi,
-} from 'openai';
+import { OpenAI } from 'openai';
 import { useAppState } from '../state/store';
 import { availableActions } from './availableActions';
 import { ParsedResponseSuccess } from './parseResponse';
@@ -47,16 +43,15 @@ export async function determineNextAction(
     return null;
   }
 
-  const openai = new OpenAIApi(
-    new Configuration({
-      apiKey: key,
-    })
-  );
+  const openai = new OpenAI({
+    apiKey: key,
+    dangerouslyAllowBrowser: true,
+  });
 
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      const completion = await openai.createChatCompletion({
-        model: model,
+      const completion = await openai.chat.completions.create({
+        model,
         messages: [
           {
             role: 'system',
@@ -64,27 +59,29 @@ export async function determineNextAction(
           },
           { role: 'user', content: prompt },
         ],
-        max_tokens: 500,
-        temperature: 0,
+        max_completion_tokens: 5000,
+        reasoning_effort: model === 'o1' ? 'low' : undefined,
+        temperature: model === 'o1' ? undefined : 0,
         stop: ['</Action>'],
       });
 
+      console.log('completion', completion);
+
       return {
-        usage: completion.data.usage as CreateCompletionResponseUsage,
+        usage: completion.usage,
         prompt,
-        response:
-          completion.data.choices[0].message?.content?.trim() + '</Action>',
+        response: completion.choices[0].message?.content?.trim() + '</Action>',
       };
     } catch (error: any) {
       console.log('determineNextAction error', error);
-      if (error.response.data.error.message.includes('server error')) {
+      if (error.message.includes('server error')) {
         // Problem with the OpenAI API, try again
         if (notifyError) {
-          notifyError(error.response.data.error.message);
+          notifyError(error.message);
         }
       } else {
         // Another error, give up
-        throw new Error(error.response.data.error.message);
+        throw new Error(error.message);
       }
     }
   }

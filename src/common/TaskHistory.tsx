@@ -93,7 +93,7 @@ const TaskHistoryItem = ({ index, entry }: TaskHistoryItemProps) => {
         </AccordionButton>
       </Heading>
       <AccordionPanel backgroundColor="gray.100" p="2">
-        <Accordion allowMultiple w="full" defaultIndex={1}>
+        <Accordion allowMultiple allowToggle w="full" defaultIndex={1}>
           <CollapsibleComponent
             title="Prompt"
             subtitle={`${entry.usage.prompt_tokens} tokens`}
