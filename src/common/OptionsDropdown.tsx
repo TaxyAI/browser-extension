@@ -10,12 +10,13 @@ import React from 'react';
 import { useAppState } from '../state/store';
 
 const OptionsDropdown = () => {
-  const { openAIKey, updateSettings } = useAppState((state) => ({
+  const { openAIKey, PGKey, updateSettings } = useAppState((state) => ({
     openAIKey: state.settings.openAIKey,
+    PGKey: state.settings.PGKey,
     updateSettings: state.settings.actions.update,
   }));
 
-  if (!openAIKey) return null;
+  if (!openAIKey && !PGKey) return null;
 
   return (
     <Menu>
