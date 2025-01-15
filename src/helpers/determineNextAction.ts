@@ -1,4 +1,4 @@
-import { OpenAI } from 'openai';
+import OpenAI from 'openpipe/openai';
 import { useAppState } from '../state/store';
 import { availableActions } from './availableActions';
 import { ParsedResponseSuccess } from './parseResponse';
@@ -37,15 +37,19 @@ export async function determineNextAction(
 ) {
   const model = useAppState.getState().settings.selectedModel;
   const prompt = formatPrompt(taskInstructions, previousActions, simplifiedDOM);
-  const key = useAppState.getState().settings.openAIKey;
-  if (!key) {
+  const openAIKey = useAppState.getState().settings.openAIKey;
+  const openPipeKey = useAppState.getState().settings.openPipeKey;
+  if (!openAIKey) {
     notifyError?.('No OpenAI key found');
     return null;
   }
 
   const openai = new OpenAI({
-    apiKey: key,
+    apiKey: openAIKey,
     dangerouslyAllowBrowser: true,
+    openpipe: {
+      apiKey: openPipeKey ?? undefined,
+    },
   });
 
   for (let i = 0; i < maxAttempts; i++) {
@@ -63,9 +67,8 @@ export async function determineNextAction(
         reasoning_effort: model === 'o1' ? 'low' : undefined,
         temperature: model === 'o1' ? undefined : 0,
         stop: ['</Action>'],
+        store: openPipeKey ? true : false,
       });
-
-      console.log('completion', completion);
 
       return {
         usage: completion.usage,

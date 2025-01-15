@@ -8,6 +8,7 @@ const ModelDropdown = () => {
   }));
 
   const [openAIKey, setOpenAIKey] = React.useState('');
+  const [openPipeKey, setOpenPipeKey] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
 
   return (
@@ -42,13 +43,27 @@ const ModelDropdown = () => {
           {showPassword ? 'Hide' : 'Show'}
         </Button>
       </HStack>
+      <HStack w="full">
+        <Input
+          placeholder="OpenPipe API Key (optional)"
+          value={openPipeKey}
+          onChange={(event) => setOpenPipeKey(event.target.value)}
+          type={showPassword ? 'text' : 'password'}
+        />
+        <Button
+          onClick={() => setShowPassword(!showPassword)}
+          variant="outline"
+        >
+          {showPassword ? 'Hide' : 'Show'}
+        </Button>
+      </HStack>
       <Button
-        onClick={() => updateSettings({ openAIKey })}
+        onClick={() => updateSettings({ openAIKey, openPipeKey })}
         w="full"
         disabled={!openAIKey}
         colorScheme="blue"
       >
-        Save Key
+        Save Keys
       </Button>
     </VStack>
   );
