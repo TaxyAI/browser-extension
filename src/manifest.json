@@ -11,11 +11,15 @@
     "storage",
     "clipboardWrite",
     "debugger",
-    "management"
+    "management",
+    "sidePanel"
   ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icon-34.png"
+  },
+  "chrome_url_overrides": {
+    "sidebar": "popup.html"
   },
   "icons": {
     "128": "icon-128.png"
@@ -41,5 +45,8 @@
         "mac": "Command+Shift+Y"
       }
     }
+  },
+  "side_panel": {
+    "default_path": "popup.html"
   }
 }

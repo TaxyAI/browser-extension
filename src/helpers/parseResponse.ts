@@ -2,6 +2,7 @@ import { ActionPayload, availableActions } from './availableActions';
 
 export type ParsedResponseSuccess = {
   thought: string;
+  currentStep: string;
   action: string;
   parsedAction: ActionPayload;
 };
@@ -15,6 +16,7 @@ export type ParsedResponse =
 export function parseResponse(text: string): ParsedResponse {
   const thoughtMatch = text.match(/<Thought>(.*?)<\/Thought>/);
   const actionMatch = text.match(/<Action>(.*?)<\/Action>/);
+  const currentStepMatch = text.match(/<CurrentStep>(.*?)<\/CurrentStep>/);
 
   if (!thoughtMatch) {
     return {
@@ -28,8 +30,15 @@ export function parseResponse(text: string): ParsedResponse {
     };
   }
 
+  if (!currentStepMatch) {
+    return {
+      error: 'Invalid response: Current step not found in the model response.',
+    };
+  }
+
   const thought = thoughtMatch[1];
   const actionString = actionMatch[1];
+  const currentStep = currentStepMatch[1];
   const actionPattern = /(\w+)\((.*?)\)/;
   const actionParts = actionString.match(actionPattern);
 
@@ -109,6 +118,7 @@ export function parseResponse(text: string): ParsedResponse {
 
   return {
     thought,
+    currentStep: currentStep,
     action: actionString,
     parsedAction,
   };

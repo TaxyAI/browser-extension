@@ -1,4 +1,3 @@
-import { CreateCompletionResponseUsage } from 'openai';
 import { attachDebugger, detachDebugger } from '../helpers/chromeDebugger';
 import {
   disableIncompatibleExtensions,
@@ -16,11 +15,17 @@ import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { sleep, truthyFilter } from '../helpers/utils';
 import { MyStateCreator } from './store';
 
+interface CreateCompletionResponseUsage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+}
+
 export type TaskHistoryEntry = {
   prompt: string;
   response: string;
   action: ParsedResponse;
-  usage: CreateCompletionResponseUsage;
+  usage?: CreateCompletionResponseUsage;
 };
 
 export type CurrentTaskSlice = {
@@ -36,6 +41,7 @@ export type CurrentTaskSlice = {
     | 'performing-query'
     | 'performing-action'
     | 'waiting';
+  plan: string | null;
   actions: {
     runTask: (onError: (error: string) => void) => Promise<void>;
     interrupt: () => void;
@@ -50,6 +56,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
   history: [],
   status: 'idle',
   actionStatus: 'idle',
+  plan: null,
   actions: {
     runTask: async (onError) => {
       const wasStopped = () => get().currentTask.status !== 'running';
@@ -68,6 +75,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         state.currentTask.history = [];
         state.currentTask.status = 'running';
         state.currentTask.actionStatus = 'attaching-debugger';
+        state.currentTask.plan = null;
       });
 
       try {
@@ -115,7 +123,8 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
             ) as ParsedResponseSuccess[],
             currentDom,
             3,
-            onError
+            onError,
+            get().currentTask.plan
           );
 
           if (!query) {
@@ -170,6 +179,12 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           setActionStatus('waiting');
           // sleep 2 seconds. This is pretty arbitrary; we should figure out a better way to determine when the page has settled.
           await sleep(2000);
+
+          if (query.plan && !get().currentTask.plan) {
+            set((state) => {
+              state.currentTask.plan = query.plan || null;
+            });
+          }
         }
         set((state) => {
           state.currentTask.status = 'success';

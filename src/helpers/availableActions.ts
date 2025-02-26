@@ -61,3 +61,12 @@ export type ActionPayload = {
     Extract<AvailableAction, { name: K }>
   >;
 }[AvailableAction['name']];
+
+export const formattedActions = availableActions
+  .map((action, i) => {
+    const args = action.args
+      .map((arg) => `${arg.name}: ${arg.type}`)
+      .join(', ');
+    return `${i + 1}. ${action.name}(${args}): ${action.description}`;
+  })
+  .join('\n');
